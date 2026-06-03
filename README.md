@@ -1,4 +1,4 @@
-# Session AI Agent
+# <img src="site/favicon-64.png" width="24"> Session AI Agent
 
 Run an AI agent on Session Messenger. Private. Anonymous. No phone or email required.
 
