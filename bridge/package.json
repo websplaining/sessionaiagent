@@ -1,0 +1,15 @@
+{
+  "name": "session-claw-bridge",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Session messenger bridge for OpenClaw AI assistant",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@session.js/client": "^0.0.57",
+    "@session.js/bun-network": "^1.0.15",
+    "dotenv": "^16.4.5"
+  }
+}

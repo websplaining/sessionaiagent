@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenClaw Session Bridge
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/session-claw-bridge
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.bun/bin"
+EnvironmentFile=-/root/session-claw-bridge/.env
+ExecStart=/root/.bun/bin/bun run index.js
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

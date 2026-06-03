@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session AI Agent - OpenClaw & Hermes on Session Messenger</title>
+  <meta name="description" content="Run OpenClaw or Hermes AI agent on Session Messenger with OpenCode Go. Private, anonymous, no phone or email required. One-command VPS setup. Free 30-day trial.">
+  <meta name="keywords" content="session ai agent, openclaw ai agent, hermes agent, session messenger, opencode go, ai assistant, private ai, anonymous ai">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://sessionaiagent.com/">
+  <meta property="og:title" content="Session AI Agent - OpenClaw & Hermes on Session Messenger">
+  <meta property="og:description" content="Run OpenClaw or Hermes AI agent on Session Messenger with OpenCode Go. One-command VPS setup.">
+  <meta property="og:url" content="https://sessionaiagent.com/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Session AI Agent">
+  <meta name="twitter:description" content="Run OpenClaw or Hermes AI agent on Session Messenger with OpenCode Go.">
+  <link rel="icon" type="image/png" href="/favicon-64.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0a0a; --surface:#0f0f0f; --border:#1f3a1f;
+      --text:#c0d0c0; --muted:#5a7a5a;
+      --accent:#00ffa3; --code-bg:#0d120d;
+      --note-bg:#0d120d; --note-border:#00ffa3;
+      --btn-bg:#151f15; --btn-hover:#1f2f1f;
+      --glow:0 0 8px #00ffa380;
+    }
+    .light {
+      --bg:#f5faf5; --surface:#fff; --border:#d0e0d0;
+      --text:#1a2a1a; --muted:#5a7a5a;
+      --accent:#00a86b; --code-bg:#eef5ee;
+      --note-bg:#eaf5ea; --note-border:#00a86b;
+      --btn-bg:#dce8dc; --btn-hover:#ccdccc;
+      --glow:none;
+    }
+    body {
+      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.8; min-height:100vh;
+    }
+    .scanline {
+      position:fixed; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:999;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,163,.015) 2px,rgba(0,255,163,.015) 4px);
+    }
+    .container { max-width:760px; margin:0 auto; padding:1rem 1.5rem 2.5rem; position:relative; }
+
+    nav {
+      position:sticky; top:0; z-index:100; background:var(--bg);
+      border-bottom:1px solid var(--border); padding:.5rem 1.5rem; margin-bottom:2rem;
+      display:flex; align-items:center; justify-content:space-between; backdrop-filter:blur(8px);
+    }
+    .nav-brand { font-weight:700; color:var(--accent); font-size:.95rem; letter-spacing:1px; display:flex; align-items:center; gap:6px; }
+    .nav-brand:hover { text-decoration:none; color:var(--accent); }
+    .nav-logo { width:24px; height:24px; border-radius:50%; object-fit:cover; filter:drop-shadow(0 0 4px var(--accent)); }
+    .nav-links { display:flex; align-items:center; gap:1rem; font-size:.8rem; }
+    .nav-links a { color:var(--muted); font-weight:400; }
+    .nav-links a:hover { color:var(--accent); text-decoration:none; }
+
+    .lang-select {
+      background:var(--btn-bg); border:1px solid var(--border); border-radius:4px;
+      color:var(--muted); font-family:inherit; font-size:.75rem; padding:3px 6px; cursor:pointer; outline:none;
+    }
+    .lang-select:focus { border-color:var(--accent); }
+
+    header { text-align:center; margin-bottom:2.5rem; }
+    .logo { display:inline-flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .logo-img { width:48px; height:48px; border-radius:50%; object-fit:cover; filter:drop-shadow(0 0 6px var(--accent)); }
+    .logo-text { font-size:1.6rem; font-weight:700; line-height:1.2; letter-spacing:1px; }
+    .logo-text .accent { color:var(--accent); text-shadow:var(--glow); }
+    .subtitle { font-size:.9rem; color:var(--accent); max-width:500px; margin:0 auto; text-shadow:0 0 6px rgba(0,255,163,.3); }
+
+    .cursor::after { content:'▌'; color:var(--accent); animation:blink 1s step-end infinite; }
+    @keyframes blink { 50%{opacity:0} }
+
+    h2 {
+      font-size:1rem; color:var(--accent); margin:2rem 0 .6rem;
+      display:flex; align-items:center; gap:8px; text-transform:uppercase;
+      letter-spacing:2px; scroll-margin-top:60px;
+    }
+    h2::before { content:'> '; opacity:.6; }
+    h2::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--accent),transparent); }
+    .h2-logo { height:1.1rem; width:auto; vertical-align:middle; border-radius:3px; transition:filter .2s; }
+    .h2-logo:hover { filter:drop-shadow(0 0 5px #fff); }
+    .inline-logo { height:1.2rem; width:auto; vertical-align:middle; border-radius:3px; margin:0 2px; }
+
+    p { margin-bottom:.6rem; }
+    ul { padding-left:1.5rem; margin-bottom:.6rem; list-style:none; }
+    li { padding:4px 0; display:flex; align-items:center; gap:8px; }
+    .engine-logo { width:22px; height:22px; border-radius:4px; object-fit:contain; flex-shrink:0; }
+
+    .code { position:relative; margin:.5rem 0; }
+    .code pre {
+      background:var(--code-bg); border:1px solid var(--border); border-radius:4px;
+      padding:.75rem 2.6rem .75rem 1rem; overflow-x:auto;
+      font-family:'Courier New', Consolas, monospace; font-size:.85rem; line-height:1.7;
+    }
+    .code .c { color:var(--muted); }
+    .code .p { color:var(--accent); user-select:none; }
+
+    .copy-btn {
+      position:absolute; top:6px; right:6px; z-index:1;
+      height:24px; padding:2px 6px; background:var(--btn-bg);
+      border:1px solid var(--border); border-radius:3px; cursor:pointer; opacity:0;
+      display:flex; align-items:center; gap:4px; font-family:inherit; font-size:.68rem; color:var(--muted);
+      transition:opacity .15s;
+    }
+    .code:hover .copy-btn { opacity:1; }
+    .copy-btn svg { width:12px; height:12px; fill:none; stroke:var(--muted); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .copy-btn:hover { background:var(--btn-hover); color:var(--accent); border-color:var(--accent); }
+    .copy-btn:hover svg { stroke:var(--accent); }
+    .copy-btn.copied { background:#0a1e0a; color:var(--accent); border-color:var(--accent); }
+    .copy-btn.copied svg { stroke:var(--accent); }
+
+    a { color:var(--accent); text-decoration:none; font-weight:600; }
+    a:hover { text-decoration:underline; }
+
+    .note {
+      background:var(--note-bg); border-left:3px solid var(--note-border);
+      padding:.6rem .8rem; border-radius:4px; margin:.8rem 0; font-size:.82rem;
+    }
+    .note code { background:var(--btn-bg); padding:.1rem .3rem; border-radius:3px; font-size:.8rem; }
+
+    footer {
+      text-align:center; padding:1.5rem 0; margin-top:2rem;
+      border-top:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center; gap:1.2rem; flex-wrap:wrap;
+    }
+    .footer-logo { height:20px; width:auto; border-radius:3px; object-fit:contain; transition:transform .2s, filter .2s; }
+    .footer-logo:hover { transform:scale(1.15); }
+    footer a:nth-child(1) .footer-logo:hover { filter:drop-shadow(0 0 6px #7c3aed); }
+    footer a:nth-child(2) .footer-logo:hover { filter:drop-shadow(0 0 6px #fff); }
+    footer a:nth-child(3) .footer-logo:hover { filter:drop-shadow(0 0 6px #00ffa3); }
+    footer a:nth-child(4) .footer-logo:hover { filter:drop-shadow(0 0 6px #dc2626); }
+    footer a:nth-child(5) .footer-logo:hover { filter:drop-shadow(0 0 6px #3b82f6); }
+    footer a:nth-child(6) .footer-logo:hover { filter:drop-shadow(0 0 6px #f59e0b); }
+
+    .theme-toggle { display:flex; align-items:center; cursor:pointer; user-select:none; }
+    .theme-track {
+      width:50px; height:28px; border-radius:14px; background:#0a1a0a;
+      position:relative; transition:background .3s; border:1px solid var(--border);
+    }
+    .theme-thumb {
+      position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%;
+      background:var(--accent); transition:transform .3s;
+      display:flex; align-items:center; justify-content:center; overflow:hidden;
+    }
+    .theme-thumb svg { width:12px; height:12px; fill:#0d1a0d; }
+    .theme-toggle.light .theme-track { background:#1a2a1a; border-color:var(--accent); }
+    .theme-toggle.light .theme-thumb { transform:translateX(22px); }
+
+    @media (max-width:640px) {
+      .container { padding:1rem .8rem; }
+      nav { padding:.4rem .8rem; }
+      .nav-brand { font-size:.85rem; }
+      .nav-links { gap:.6rem; font-size:.7rem; }
+      .lang-select { font-size:.68rem; padding:2px 4px; }
+      .code pre { font-size:.74rem; padding:.55rem 2rem .55rem .6rem; }
+      .logo-img { width:36px; height:36px; }
+      .logo-text { font-size:1.3rem; }
+      .subtitle { font-size:.8rem; }
+    }
+  </style>
+</head>
+<body>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Session AI Agent","applicationCategory":"AIApplication","operatingSystem":"Linux","description":"Run OpenClaw or Hermes AI agent on Session Messenger with OpenCode Go. One-command VPS setup.","url":"https://sessionaiagent.com","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<div class="scanline"></div>
+<nav>
+  <a href="/" class="nav-brand"><img src="/session-logo-opt.png" alt="S" class="nav-logo"><span data-i18n="brand">Session AI Agent</span></a>
+  <div class="nav-links">
+    <select class="lang-select" id="langSelect" onchange="setLang(this.value)">
+      <option value="en">EN</option><option value="ru">RU</option><option value="es">ES</option>
+      <option value="ar">AR</option><option value="zh">中文</option><option value="ja">日本語</option>
+      <option value="hi">HI</option><option value="pt">PT</option><option value="fr">FR</option>
+      <option value="nl">NL</option><option value="ko">KO</option><option value="fa">FA</option>
+    </select>
+    <a href="#setup" data-i18n="nav_setup">Setup</a>
+    <a href="#opencode" data-i18n="nav_go">Go</a>
+    <a href="#engines" data-i18n="nav_engines">Engines</a>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" role="switch" aria-checked="false">
+      <span class="theme-track"><span class="theme-thumb"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span></span>
+    </div>
+  </div>
+</nav>
+<div class="container">
+
+<header>
+  <div class="logo">
+    <img src="/session-logo-opt.png" alt="Session" class="logo-img">
+    <div class="logo-text"><span class="accent">[ <span data-i18n="brand">Session AI Agent</span> ]</span></div>
+  </div>
+  <p class="subtitle"><span id="typewriter"></span><span class="cursor"></span></p>
+</header>
+
+<h2 id="setup" data-i18n="h_setup">Setup</h2>
+<p data-i18n="p_setup">Requires a VPS (Ubuntu 24.04+, 1 GB RAM, IPv6 optional). We recommend <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/month with a free 30-day trial ($100 credits). You'll need a separate Session account for your AI agent, plus your own Session ID.</p>
+
+<div class="note" data-i18n="note_tested">Tested on Ubuntu. Debian may work but is untested.</div>
+<p data-i18n="p_oneliner">One command as root - installs everything and runs 24/7:</p>
+
+<div class="code"><pre><span class="p">#</span> curl -sL https://sessionaiagent.com/setup.sh | bash</pre></div>
+
+<div class="note"><span data-i18n="note_rerun1">After setup, the bot's Session ID is printed. Paste it into Session to send a message request. Only your Session ID can message the bot.</span><br>
+  <span data-i18n="note_rerun2">Re-run the script anytime to</span> <strong data-i18n="change_model">change model</strong> <span data-i18n="or">or</span> <strong data-i18n="uninstall">uninstall</strong>.
+</div>
+
+<h2 id="opencode"><a href="https://opencode.ai/go?ref=9Q6GKAZPK6"><img src="/opencode%20logo.png" alt="" class="h2-logo"></a> OpenCode <a href="https://opencode.ai/go?ref=9Q6GKAZPK6"><img src="/go%20logo.png" alt="Go" class="h2-logo"></a></h2>
+<p><span data-i18n="p_go1">Session AI Agent runs on</span> <a href="https://opencode.ai/go?ref=9Q6GKAZPK6">OpenCode Go</a> - <span data-i18n="p_go2">a subscription for coding models including DeepSeek, GLM, Kimi, Qwen, and more.</span> <a href="https://opencode.ai/go?ref=9Q6GKAZPK6" data-i18n="use_link">Use this link</a> <span data-i18n="p_go3">for your first month at $5</span> <span data-i18n="p_go4">(then $10/month).</span></p>
+<p data-i18n="p_models">The script fetches available models live during setup. You pick by number. Default: <code>opencode-go/deepseek-v4-pro</code>.</p>
+
+<h2 id="engines" data-i18n="h_engines">Agent Engines</h2>
+<p data-i18n="p_engines">Choose between two AI engines during setup:</p>
+<ul>
+  <li><img src="/openclaw%20logo.png" alt="" class="engine-logo"> <strong data-i18n="li_openclaw">OpenClaw</strong> <span data-i18n="li_oc_desc">- multi-channel gateway agent (default)</span></li>
+  <li><img src="/hermes-logo-opt.png" alt="" class="engine-logo"> <strong data-i18n="li_hermes">Hermes Agent</strong> <span data-i18n="li_hm_desc">- self-improving agent with memory &amp; skills</span></li>
+</ul>
+
+<h2 data-i18n="h_after">After Setup</h2>
+<p data-i18n="p_after">To change models, re-run the setup script or edit <code>.env</code> directly:</p>
+
+<div class="code"><pre><span class="p">$</span> cd /root/session-claw-bridge && nano .env</pre></div>
+<div class="code"><pre><span class="p">$</span> systemctl restart claw-bridge</pre></div>
+
+<p data-i18n="p_env">Your <code>.env</code>:</p>
+
+<div class="code"><pre>SESSION_MNEMONIC="your 13 words"
+OWNER_SESSION_ID=05abc...
+OPENCODE_API_KEY=...
+MODEL=opencode-go/deepseek-v4-pro</pre></div>
+
+<footer>
+  <a href="https://kamatera.sjv.io/c/1245219/3024352/36439" aria-label="Kamatera"><img src="/kamatera.png" alt="Kamatera" class="footer-logo"></a>
+  <a href="https://opencode.ai/go?ref=9Q6GKAZPK6" aria-label="OpenCode Go"><img src="/opencode%20logo.png" alt="OpenCode Go" class="footer-logo"></a>
+  <a href="https://getsession.org" aria-label="Session Messenger"><img src="/session-logo-opt.png" alt="Session" class="footer-logo"></a>
+  <a href="https://openclaw.ai" aria-label="OpenClaw"><img src="/openclaw%20logo.png" alt="OpenClaw" class="footer-logo"></a>
+  <a href="https://hermes-agent.nousresearch.com" aria-label="Hermes Agent"><img src="/hermes-logo-opt.png" alt="Hermes" class="footer-logo"></a>
+  <a href="https://www.youtube.com/@Websplaining" aria-label="Websplaining YouTube"><img src="/websplaining-logo.png" alt="Websplaining" class="footer-logo"></a>
+</footer>
+
+</div>
+
+<script>
+const I18N = {
+  en: {
+    brand:'Session AI Agent', nav_setup:'Setup', nav_go:'Go', nav_engines:'Engines',
+    h_setup:'Setup', h_go:'OpenCode Go', h_engines:'Agent Engines', h_after:'After Setup',
+    p_setup:'Requires a VPS (Ubuntu 24.04+, 1 GB RAM, IPv6 optional). We recommend <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/month with a free 30-day trial ($100 credits). You\'ll need a separate Session account for your AI agent, plus your own Session ID.',
+    note_tested:'Tested on Ubuntu. Debian may work but is untested.',
+    p_oneliner:'One command as root - installs everything and runs 24/7:',
+    note_rerun1:'After setup, the bot\'s Session ID is printed. Paste it into Session to send a message request. Only your Session ID can message the bot.',
+    note_rerun2:'Re-run the script anytime to', change_model:'change model', uninstall:'uninstall', or:'or',
+    p_go1:'Session AI Agent runs on', p_go2:'a subscription for coding models including DeepSeek, GLM, Kimi, Qwen, and more.', use_link:'Use this link', p_go3:'for your first month at $5', p_go4:'(then $10/month).',
+    p_models:'The script fetches available models live during setup. You pick by number. Default: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'Choose between two AI engines during setup:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- multi-channel gateway agent (default)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- self-improving agent with memory & skills',
+    p_after:'To change models, re-run the setup script or edit <code>.env</code> directly:',
+    p_env:'Your <code>.env</code>:',
+    typewriter:'An AI assistant on Session Messenger using OpenClaw or Hermes Agent with an OpenCode Go API key.'
+  },
+  ru: {
+    brand:'Session AI Agent', nav_setup:'Установка', nav_go:'Go', nav_engines:'Движки',
+    h_setup:'Установка', h_go:'OpenCode Go', h_engines:'AI Движки', h_after:'После установки',
+    p_setup:'Требуется VPS (Ubuntu 24.04+, 1 GB RAM, IPv6 опц.). Рекомендуем <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/мес с бесплатным 30-дневным пробным периодом ($100 кредитов). Нужен отдельный аккаунт Session для агента и ваш Session ID.',
+    note_tested:'Протестировано на Ubuntu. Debian может работать, но не тестировался.',
+    p_oneliner:'Одна команда от root - устанавливает всё и работает 24/7:',
+    note_rerun1:'После установки отобразится Session ID бота. Вставьте его в Session. Только ваш Session ID может отправлять сообщения боту.',
+    note_rerun2:'Запустите скрипт снова чтобы', change_model:'сменить модель', uninstall:'удалить', or:'или',
+    p_go1:'Session AI Agent работает на', p_go2:'подписке с моделями DeepSeek, GLM, Kimi, Qwen и др.', use_link:'Используйте ссылку', p_go3:'для первого месяца за $5', p_go4:'(затем $10/мес).',
+    p_models:'Скрипт загружает доступные модели во время установки. Выбор по номеру. По умолчанию: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'Выберите один из двух AI движков при установке:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- многоканальный шлюзовой агент (по умолчанию)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- самообучающийся агент с памятью и навыками',
+    p_after:'Чтобы сменить модель, запустите скрипт снова или отредактируйте <code>.env</code>:',
+    p_env:'Ваш <code>.env</code>:',
+    typewriter:'AI ассистент в Session Messenger на базе OpenClaw или Hermes Agent с ключом API OpenCode Go.'
+  },
+  es: {
+    brand:'Session AI Agent', nav_setup:'Instalar', nav_go:'Go', nav_engines:'Motores',
+    h_setup:'Instalación', h_go:'OpenCode Go', h_engines:'Motores IA', h_after:'Después',
+    p_setup:'Requiere VPS (Ubuntu 24.04+, 1 GB RAM, IPv6 opc.). Recomendamos <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/mes con prueba gratis de 30 días ($100 créditos). Necesitas una cuenta Session aparte para tu agente IA y tu Session ID.',
+    note_tested:'Probado en Ubuntu. Debian puede funcionar pero no está probado.',
+    p_oneliner:'Un comando como root - instala todo y funciona 24/7:',
+    note_rerun1:'Tras la instalación, se muestra el Session ID del bot. Pégalo en Session. Solo tu Session ID puede enviar mensajes al bot.',
+    note_rerun2:'Vuelve a ejecutar el script para', change_model:'cambiar modelo', uninstall:'desinstalar', or:'o',
+    p_go1:'Session AI Agent funciona con', p_go2:'una suscripción con modelos DeepSeek, GLM, Kimi, Qwen y más.', use_link:'Usa este enlace', p_go3:'para tu primer mes a $5', p_go4:'(luego $10/mes).',
+    p_models:'El script obtiene los modelos disponibles durante la instalación. Eliges por número. Por defecto: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'Elige entre dos motores IA durante la instalación:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- agente de puerta de enlace multicanal (por defecto)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- agente auto-mejorable con memoria y habilidades',
+    p_after:'Para cambiar modelos, vuelve a ejecutar el script o edita <code>.env</code>:',
+    p_env:'Tu <code>.env</code>:',
+    typewriter:'Un asistente IA en Session Messenger usando OpenClaw o Hermes Agent con clave API de OpenCode Go.'
+  },
+  ar: {
+    brand:'Session AI Agent', nav_setup:'تثبيت', nav_go:'Go', nav_engines:'محركات',
+    h_setup:'التثبيت', h_go:'OpenCode Go', h_engines:'محركات الذكاء', h_after:'بعد التثبيت',
+    p_setup:'يتطلب VPS (Ubuntu 24.04+، 1GB RAM، IPv6 اختياري). نوصي بـ <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - 4$/شهر مع تجربة مجانية 30 يوم (100$ رصيد). تحتاج حساب Session منفصل للوكيل و Session ID الخاص بك.',
+    note_tested:'تم الاختبار على Ubuntu. قد يعمل Debian لكن لم يتم اختباره.',
+    p_oneliner:'أمر واحد كـ root - يثبت كل شيء ويعمل 24/7:',
+    note_rerun1:'بعد التثبيت، سيظهر Session ID للبوت. الصقه في Session. فقط Session ID الخاص بك يمكنه مراسلة البوت.',
+    note_rerun2:'أعد تشغيل السكريبت لـ', change_model:'تغيير النموذج', uninstall:'إلغاء التثبيت', or:'أو',
+    p_go1:'يعمل Session AI Agent على', p_go2:'اشتراك مع نماذج DeepSeek, GLM, Kimi, Qwen وغيرها.', use_link:'استخدم هذا الرابط',     p_go3:'لشهرك الأول بـ $5', p_go4:'(ثم 10$/شهر).',
+    p_models:'يجلب السكريبت النماذج المتاحة أثناء التثبيت. تختار بالرقم. الافتراضي: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'اختر بين محركي ذكاء اصطناعي أثناء التثبيت:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- وكيل بوابة متعدد القنوات (افتراضي)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- وكيل ذاتي التحسين مع ذاكرة ومهارات',
+    p_after:'لتغيير النماذج، أعد تشغيل السكريبت أو عدل <code>.env</code>:',
+    p_env:'ملف <code>.env</code> الخاص بك:',
+    typewriter:'مساعد ذكاء اصطناعي على Session Messenger باستخدام OpenClaw أو Hermes Agent مع مفتاح API من OpenCode Go.'
+  },
+  zh: {
+    brand:'Session AI 代理', nav_setup:'安装', nav_go:'Go', nav_engines:'引擎',
+    h_setup:'安装', h_go:'OpenCode Go', h_engines:'AI 引擎', h_after:'安装后',
+    p_setup:'需要 VPS（Ubuntu 24.04+，1GB RAM，IPv6 可选）。推荐 <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/月，30天免费试用（$100额度）。需要单独的 Session 账户用于 AI 代理及你的 Session ID。',
+    note_tested:'已在 Ubuntu 测试。Debian 可能可用但未经测试。',
+    p_oneliner:'一条命令以 root 运行 - 安装所有并 24/7 运行：',
+    note_rerun1:'安装后，会显示机器人的 Session ID。在 Session 中粘贴即可发消息。只有你的 Session ID 可以发消息给机器人。',
+    note_rerun2:'重新运行脚本以', change_model:'更换模型', uninstall:'卸载', or:'或',
+    p_go1:'Session AI 代理运行于', p_go2:'订阅服务，包含 DeepSeek、GLM、Kimi、Qwen 等模型。', use_link:'使用此链接',     p_go3:'首月仅需 $5', p_go4:'（之后 $10/月）。',
+    p_models:'脚本在安装时获取可用模型。按编号选择。默认：<code>opencode-go/deepseek-v4-pro</code>。',
+    p_engines:'安装时选择两个 AI 引擎之一：',
+    li_openclaw:'OpenClaw', li_oc_desc:'- 多渠道网关代理（默认）',
+    li_hermes:'Hermes Agent', li_hm_desc:'- 带记忆和技能的自我改进代理',
+    p_after:'要更换模型，重新运行脚本或编辑 <code>.env</code>：',
+    p_env:'你的 <code>.env</code>：',
+    typewriter:'Session Messenger 上的 AI 助手，使用 OpenClaw 或 Hermes Agent 配合 OpenCode Go API 密钥。'
+  },
+  ja: {
+    brand:'Session AI エージェント', nav_setup:'セットアップ', nav_go:'Go', nav_engines:'エンジン',
+    h_setup:'セットアップ', h_go:'OpenCode Go', h_engines:'AI エンジン', h_after:'セットアップ後',
+    p_setup:'VPSが必要（Ubuntu 24.04+、1GB RAM、IPv6 オプション）。<a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/月、30日間無料トライアル（$100クレジット）。AIエージェント用のSessionアカウントとあなたのSession IDが必要です。',
+    note_tested:'Ubuntuでテスト済み。Debianは動作する可能性がありますが未テストです。',
+    p_oneliner:'rootで1つのコマンド - すべてインストールして24/7稼働：',
+    note_rerun1:'セットアップ後、ボットのSession IDが表示されます。Sessionに貼り付けてメッセージを送信。あなたのSession IDのみがボットにメッセージできます。',
+    note_rerun2:'スクリプトを再実行して', change_model:'モデル変更', uninstall:'アンインストール', or:'または',
+    p_go1:'Session AI エージェントは', p_go2:'DeepSeek、GLM、Kimi、Qwenなどのモデルを含むサブスクリプションで動作します。', use_link:'このリンクを使用',     p_go3:'して初月 $5', p_go4:'（その後$10/月）。',
+    p_models:'スクリプトはセットアップ時に利用可能なモデルを取得します。番号で選択。デフォルト：<code>opencode-go/deepseek-v4-pro</code>。',
+    p_engines:'セットアップ時に2つのAIエンジンから選択：',
+    li_openclaw:'OpenClaw', li_oc_desc:'- マルチチャンネルゲートウェイエージェント（デフォルト）',
+    li_hermes:'Hermes Agent', li_hm_desc:'- 記憶とスキルを持つ自己改善エージェント',
+    p_after:'モデルを変更するには、スクリプトを再実行するか<code>.env</code>を編集します：',
+    p_env:'あなたの<code>.env</code>：',
+    typewriter:'Session Messenger上のAIアシスタント。OpenClawまたはHermes AgentとOpenCode Go APIキーで動作します。'
+  },
+  hi: {
+    brand:'Session AI Agent', nav_setup:'सेटअप', nav_go:'Go', nav_engines:'इंजन',
+    h_setup:'सेटअप', h_go:'OpenCode Go', h_engines:'AI इंजन', h_after:'सेटअप के बाद',
+    p_setup:'VPS आवश्यक (Ubuntu 24.04+, 1GB RAM, IPv6 वैकल्पिक)। <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/माह, 30 दिन का मुफ्त ट्रायल ($100 क्रेडिट)। AI एजेंट के लिए अलग Session अकाउंट और आपका Session ID चाहिए।',
+    note_tested:'Ubuntu पर परीक्षण किया गया। Debian काम कर सकता है लेकिन परीक्षण नहीं किया गया।',
+    p_oneliner:'root के रूप में एक कमांड - सब कुछ इंस्टॉल करता है और 24/7 चलता है:',
+    note_rerun1:'सेटअप के बाद, बॉट का Session ID दिखाया जाएगा। इसे Session में पेस्ट करें। केवल आपका Session ID बॉट को मैसेज कर सकता है।',
+    note_rerun2:'स्क्रिप्ट फिर से चलाएं', change_model:'मॉडल बदलें', uninstall:'अनइंस्टॉल करें', or:'या',
+    p_go1:'Session AI Agent', p_go2:'सब्सक्रिप्शन पर चलता है जिसमें DeepSeek, GLM, Kimi, Qwen और अन्य मॉडल शामिल हैं।', use_link:'यह लिंक उपयोग करें',     p_go3:'पहले महीने के लिए $5', p_go4:'(फिर $10/माह)।',
+    p_models:'स्क्रिप्ट सेटअप के दौरान उपलब्ध मॉडल लाती है। नंबर से चुनें। डिफ़ॉल्ट: <code>opencode-go/deepseek-v4-pro</code>।',
+    p_engines:'सेटअप के दौरान दो AI इंजन में से चुनें:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- मल्टी-चैनल गेटवे एजेंट (डिफ़ॉल्ट)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- मेमोरी और स्किल्स वाला स्व-सुधार एजेंट',
+    p_after:'मॉडल बदलने के लिए, स्क्रिप्ट फिर से चलाएं या <code>.env</code> संपादित करें:',
+    p_env:'आपका <code>.env</code>:',
+    typewriter:'Session Messenger पर AI असिस्टेंट, OpenClaw या Hermes Agent और OpenCode Go API की के साथ।'
+  },
+  pt: {
+    brand:'Session AI Agent', nav_setup:'Instalar', nav_go:'Go', nav_engines:'Motores',
+    h_setup:'Instalação', h_go:'OpenCode Go', h_engines:'Motores IA', h_after:'Após Instalar',
+    p_setup:'Requer VPS (Ubuntu 24.04+, 1GB RAM, IPv6 opc.). Recomendamos <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - $4/mês com teste grátis de 30 dias ($100 créditos). Precisa de uma conta Session separada para seu agente IA e seu Session ID.',
+    note_tested:'Testado no Ubuntu. Debian pode funcionar mas não foi testado.',
+    p_oneliner:'Um comando como root - instala tudo e funciona 24/7:',
+    note_rerun1:'Após a instalação, o Session ID do bot é exibido. Cole no Session para enviar uma mensagem. Apenas seu Session ID pode enviar mensagens ao bot.',
+    note_rerun2:'Execute o script novamente para', change_model:'trocar modelo', uninstall:'desinstalar', or:'ou',
+    p_go1:'Session AI Agent roda no', p_go2:'uma assinatura com modelos DeepSeek, GLM, Kimi, Qwen e mais.', use_link:'Use este link',     p_go3:'para seu primeiro mês por $5', p_go4:'(depois $10/mês).',
+    p_models:'O script busca modelos disponíveis durante a instalação. Escolha por número. Padrão: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'Escolha entre dois motores de IA durante a instalação:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- agente de gateway multicanal (padrão)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- agente auto-melhorável com memória e habilidades',
+    p_after:'Para trocar de modelo, execute o script novamente ou edite <code>.env</code>:',
+    p_env:'Seu <code>.env</code>:',
+    typewriter:'Um assistente de IA no Session Messenger usando OpenClaw ou Hermes Agent com chave API OpenCode Go.'
+  },
+  fr: {
+    brand:'Session AI Agent', nav_setup:'Installer', nav_go:'Go', nav_engines:'Moteurs',
+    h_setup:'Installation', h_go:'OpenCode Go', h_engines:'Moteurs IA', h_after:'Après installation',
+    p_setup:'Nécessite un VPS (Ubuntu 24.04+, 1 Go RAM, IPv6 opt.). Nous recommandons <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - 4$/mois avec essai gratuit de 30 jours (100$ crédits). Compte Session séparé requis pour votre agent IA et votre Session ID.',
+    note_tested:'Testé sur Ubuntu. Debian peut fonctionner mais n\'a pas été testé.',
+    p_oneliner:'Une commande en root - installe tout et fonctionne 24/7 :',
+    note_rerun1:'Après l\'installation, le Session ID du bot s\'affiche. Collez-le dans Session pour envoyer un message. Seul votre Session ID peut envoyer des messages au bot.',
+    note_rerun2:'Relancez le script pour', change_model:'changer de modèle', uninstall:'désinstaller', or:'ou',
+    p_go1:'Session AI Agent fonctionne avec', p_go2:'un abonnement incluant DeepSeek, GLM, Kimi, Qwen et plus.', use_link:'Utilisez ce lien',     p_go3:'pour votre premier mois à $5', p_go4:'(puis 10$/mois).',
+    p_models:'Le script récupère les modèles disponibles lors de l\'installation. Choisissez par numéro. Défaut : <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'Choisissez entre deux moteurs IA lors de l\'installation :',
+    li_openclaw:'OpenClaw', li_oc_desc:'- agent passerelle multicanal (défaut)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- agent auto-améliorable avec mémoire et compétences',
+    p_after:'Pour changer de modèle, relancez le script ou modifiez <code>.env</code> :',
+    p_env:'Votre <code>.env</code> :',
+    typewriter:'Un assistant IA sur Session Messenger utilisant OpenClaw ou Hermes Agent avec une clé API OpenCode Go.'
+  },
+  nl: {
+    brand:'Session AI Agent', nav_setup:'Installatie', nav_go:'Go', nav_engines:'Engines',
+    h_setup:'Installatie', h_go:'OpenCode Go', h_engines:'AI Engines', h_after:'Na installatie',
+    p_setup:'Vereist VPS (Ubuntu 24.04+, 1GB RAM, IPv6 opt.). Wij raden <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> aan - $4/maand met gratis 30 dagen proef ($100 tegoed). Je hebt een apart Session-account nodig voor je AI-agent en je eigen Session ID.',
+    note_tested:'Getest op Ubuntu. Debian werkt mogelijk maar is niet getest.',
+    p_oneliner:'Eén commando als root - installeert alles en draait 24/7:',
+    note_rerun1:'Na installatie wordt het Session ID van de bot getoond. Plak het in Session om een bericht te sturen. Alleen jouw Session ID kan berichten sturen naar de bot.',
+    note_rerun2:'Voer het script opnieuw uit om', change_model:'model te wijzigen', uninstall:'verwijderen', or:'of',
+    p_go1:'Session AI Agent draait op', p_go2:'een abonnement met modellen zoals DeepSeek, GLM, Kimi, Qwen en meer.', use_link:'Gebruik deze link', p_go3:'voor je eerste maand voor', p_go4:'(daarna $10/maand).',
+    p_models:'Het script haalt beschikbare modellen op tijdens installatie. Kies op nummer. Standaard: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'Kies tussen twee AI-engines tijdens installatie:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- multi-channel gateway agent (standaard)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- zelfverbeterende agent met geheugen en vaardigheden',
+    p_after:'Om van model te wisselen, voer het script opnieuw uit of bewerk <code>.env</code>:',
+    p_env:'Jouw <code>.env</code>:',
+    typewriter:'Een AI-assistent op Session Messenger met OpenClaw of Hermes Agent en een OpenCode Go API-sleutel.'
+  },
+  ko: {
+    brand:'Session AI 에이전트', nav_setup:'설치', nav_go:'Go', nav_engines:'엔진',
+    h_setup:'설치', h_go:'OpenCode Go', h_engines:'AI 엔진', h_after:'설치 후',
+    p_setup:'VPS 필요 (Ubuntu 24.04+, 1GB RAM, IPv6 선택). <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - 월 $4, 30일 무료 체험 ($100 크레딧). AI 에이전트용 별도 Session 계정과 본인 Session ID가 필요합니다.',
+    note_tested:'Ubuntu에서 테스트됨. Debian은 작동 가능하나 테스트되지 않음.',
+    p_oneliner:'root로 한 줄 명령 - 모두 설치하고 24/7 실행:',
+    note_rerun1:'설치 후 봇의 Session ID가 표시됩니다. Session에 붙여넣어 메시지를 보내세요. 본인 Session ID만 봇에 메시지를 보낼 수 있습니다.',
+    note_rerun2:'스크립트를 다시 실행하여', change_model:'모델 변경', uninstall:'제거', or:'또는',
+    p_go1:'Session AI 에이전트는', p_go2:'DeepSeek, GLM, Kimi, Qwen 등의 모델을 포함한 구독으로 작동합니다.', use_link:'이 링크 사용', p_go3:'첫 달', p_go4:'(이후 월 $10).',
+    p_models:'설치 중 사용 가능한 모델을 가져옵니다. 번호로 선택. 기본값: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'설치 중 두 AI 엔진 중 선택:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- 멀티채널 게이트웨이 에이전트 (기본)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- 메모리와 스킬을 갖춘 자기 개선 에이전트',
+    p_after:'모델을 변경하려면 스크립트를 다시 실행하거나 <code>.env</code>를 편집하세요:',
+    p_env:'당신의 <code>.env</code>:',
+    typewriter:'Session Messenger의 AI 어시스턴트, OpenClaw 또는 Hermes Agent와 OpenCode Go API 키 사용.'
+  },
+  fa: {
+    brand:'Session AI Agent', nav_setup:'نصب', nav_go:'Go', nav_engines:'موتورها',
+    h_setup:'نصب', h_go:'OpenCode Go', h_engines:'موتورهای هوش مصنوعی', h_after:'پس از نصب',
+    p_setup:'نیاز به VPS (اوبونتو 24.04+، ۱GB RAM، IPv6 اختیاری). <a href="https://kamatera.sjv.io/c/1245219/3024352/36439"><img src="/kamatera.png" alt="" class="inline-logo"> Kamatera</a> - ۴$/ماه با ۳۰ روز آزمایشی رایگان (۱۰۰$ اعتبار). نیاز به حساب Session جداگانه برای عامل و Session ID شما.',
+    note_tested:'روی اوبونتو تست شده. Debian ممکن است کار کند اما تست نشده است.',
+    p_oneliner:'یک دستور به عنوان root - همه چیز را نصب می‌کند و ۲۴/۷ اجرا می‌شود:',
+    note_rerun1:'پس از نصب، Session ID ربات نمایش داده می‌شود. آن را در Session پیست کنید. فقط Session ID شما می‌تواند به ربات پیام دهد.',
+    note_rerun2:'اسکریپت را دوباره اجرا کنید برای', change_model:'تغییر مدل', uninstall:'حذف', or:'یا',
+    p_go1:'Session AI Agent روی', p_go2:'یک اشتراک شامل مدل‌های DeepSeek، GLM، Kimi، Qwen و بیشتر اجرا می‌شود.', use_link:'از این لینک استفاده کنید', p_go3:'برای ماه اول', p_go4:'(سپس ۱۰$/ماه).',
+    p_models:'اسکریپت مدل‌های موجود را هنگام نصب دریافت می‌کند. با شماره انتخاب کنید. پیش‌فرض: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_engines:'هنگام نصب بین دو موتور هوش مصنوعی انتخاب کنید:',
+    li_openclaw:'OpenClaw', li_oc_desc:'- عامل دروازه چند کاناله (پیش‌فرض)',
+    li_hermes:'Hermes Agent', li_hm_desc:'- عامل خود-بهبود با حافظه و مهارت‌ها',
+    p_after:'برای تغییر مدل، اسکریپت را دوباره اجرا کنید یا <code>.env</code> را ویرایش کنید:',
+    p_env:'فایل <code>.env</code> شما:',
+    typewriter:'دستیار هوش مصنوعی در Session Messenger با استفاده از OpenClaw یا Hermes Agent با کلید API OpenCode Go.'
+  }
+}
+
+let typeTimer
+
+function setLang(lang) {
+  document.documentElement.lang = lang
+  localStorage.lang = lang
+  const els = document.querySelectorAll('[data-i18n]')
+  for (let i = els.length - 1; i >= 0; i--) {
+    const el = els[i], k = el.dataset.i18n
+    if (I18N[lang]?.[k]) el.innerHTML = I18N[lang][k]
+  }
+  const tw = I18N[lang]?.typewriter || I18N.en.typewriter
+  const twEl = document.getElementById('typewriter')
+  twEl.textContent = ''
+  clearTimeout(typeTimer)
+  let j = 0
+  function t() { if (j < tw.length) { twEl.textContent += tw[j]; j++; typeTimer = setTimeout(t, 30 + Math.random() * 40) } }
+  t()
+  document.getElementById('langSelect').value = lang
+}
+
+function detectLang() {
+  const saved = localStorage.lang
+  if (saved) return saved
+  const code = (navigator.language || 'en').split('-')[0]
+  return I18N[code] ? code : 'en'
+}
+
+const SL = detectLang()
+setLang(SL)
+
+const S_ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><g stroke="#0d1a0d" stroke-width="2" stroke-linecap="round"><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></g></svg>'
+const M_ICON = '<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
+
+;(function() {
+  const d = document.documentElement, t = document.getElementById('themeToggle')
+  const thumb = t.querySelector('.theme-thumb'), isLight = localStorage.theme === 'light'
+  if (isLight) { d.classList.add('light'); t.classList.add('light') }
+  thumb.innerHTML = isLight ? S_ICON : M_ICON
+  t.setAttribute('aria-checked', isLight)
+})()
+
+function toggleTheme() {
+  const d = document.documentElement, t = document.getElementById('themeToggle')
+  const thumb = t.querySelector('.theme-thumb')
+  d.classList.toggle('light'); t.classList.toggle('light')
+  const isLight = d.classList.contains('light')
+  localStorage.theme = isLight ? 'light' : 'dark'
+  thumb.innerHTML = isLight ? S_ICON : M_ICON
+  t.setAttribute('aria-checked', isLight)
+}
+
+const COPY = {
+  icon: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>',
+  ok: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'
+}
+
+document.querySelectorAll('.code').forEach(el => {
+  const btn = document.createElement('button')
+  btn.className = 'copy-btn'; btn.innerHTML = COPY.icon + ' Copy'
+  const clone = el.cloneNode(true)
+  clone.querySelector('.copy-btn')?.remove()
+  const text = clone.textContent.replace(/^[$#]\s*/, '').trim()
+  btn.addEventListener('click', () => {
+    const ta = document.createElement('textarea')
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'
+    document.body.appendChild(ta); ta.select()
+    try { document.execCommand('copy') } catch { navigator.clipboard.writeText(text).catch(() => {}) }
+    document.body.removeChild(ta)
+    btn.classList.add('copied'); btn.innerHTML = COPY.ok + ' Copied'
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = COPY.icon + ' Copy' }, 1500)
+  })
+  el.appendChild(btn)
+})
+</script>
+</body>
+</html>
