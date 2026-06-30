@@ -107,7 +107,9 @@ if [[ -f "$DIR/.env" ]]; then
     echo ""; echo "  1) OpenClaw   2) Hermes Agent"
     read -p "Choice [1-2]: " eng </dev/tty
     if [[ "$eng" == 2 ]]; then
-      install_hermes "$OPENCODE_API_KEY"; sed -i 's|^BACKEND=.*|BACKEND=hermes|' "$DIR/.env"
+      install_hermes "$OPENCODE_API_KEY"
+      sed -i 's|^BACKEND=.*|BACKEND=hermes|' "$DIR/.env"
+      grep -q '^OPENCODE_GO_API_KEY=' "$DIR/.env" || echo "OPENCODE_GO_API_KEY=$OPENCODE_API_KEY" >> "$DIR/.env"
       echo -e "${GREEN}Switched to Hermes.${NC}"
     else
       sed -i 's|^BACKEND=.*|BACKEND=openclaw|' "$DIR/.env"
