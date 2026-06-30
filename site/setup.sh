@@ -71,10 +71,12 @@ init_openclaw() {
 install_hermes() {
   echo "==> Installing Hermes Agent... (this may take a few minutes)"
   apt-get install -y -qq python3-pip python3-venv 2>/dev/null || true
-  pip3 install -q --break-system-packages hermes-agent 2>/dev/null || true
+  pip3 install --break-system-packages --ignore-installed hermes-agent 2>&1 | tail -3 || true
   export PATH="$HOME/.local/bin:$PATH"
+  which hermes >/dev/null 2>&1 || { echo "  Hermes install failed."; return 1; }
   mkdir -p ~/.hermes
   echo "OPENCODE_GO_API_KEY=${1:-$API_KEY}" > ~/.hermes/.env
+  echo "  Hermes installed: $(hermes --version 2>&1 | head -1)"
 }
 
 # ── manage menu ──────────────────────────────────────────────────
