@@ -109,11 +109,20 @@ if [[ -f "$DIR/.env" ]]; then
     echo ""; echo "  1) OpenClaw   2) Hermes Agent"
     read -p "Choice [1-2]: " eng </dev/tty
     if [[ "$eng" == 2 ]]; then
-      install_hermes "$OPENCODE_API_KEY"
-      sed -i 's|^BACKEND=.*|BACKEND=hermes|' "$DIR/.env"
-      grep -q '^OPENCODE_GO_API_KEY=' "$DIR/.env" || echo "OPENCODE_GO_API_KEY=$OPENCODE_API_KEY" >> "$DIR/.env"
-      echo -e "${GREEN}Switched to Hermes.${NC}"
+      if install_hermes "$OPENCODE_API_KEY"; then
+        sed -i 's|^BACKEND=.*|BACKEND=hermes|' "$DIR/.env"
+        grep -q '^OPENCODE_GO_API_KEY=' "$DIR/.env" || echo "OPENCODE_GO_API_KEY=$OPENCODE_API_KEY" >> "$DIR/.env"
+        echo -e "${GREEN}Switched to Hermes.${NC}"
+      else
+        echo "  Hermes installation failed. Staying on OpenClaw."
+      fi
     else
+      which openclaw >/dev/null 2>&1 || {
+        echo -n "==> Installing OpenClaw..."
+        export PATH="/root/.bun/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+        npm install -g openclaw@latest >/dev/null 2>&1 &
+        spinner $!
+      }
       sed -i 's|^BACKEND=.*|BACKEND=openclaw|' "$DIR/.env"
       init_openclaw "$OPENCODE_API_KEY" "$MODEL"
       echo -e "${GREEN}Switched to OpenClaw.${NC}"
@@ -154,8 +163,9 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 echo "==> Downloading bridge..."
 cd /root
-curl -sL https://sessionaiagent.com/session-claw-bridge.tar.gz | tar xz
-cd "$DIR" && bun install --quiet >/dev/null 2>&1
+curl -sL https://sessionaiagent.com/session-claw-bridge.tar.gz | tar xz || { echo "Download failed."; exit 1; }
+cd "$DIR" || { echo "Bridge directory missing."; exit 1; }
+bun install --quiet >/dev/null 2>&1 || true
 
 echo ""; echo "==> Configuration"; echo ""
 
@@ -176,7 +186,15 @@ echo ""; echo "AI engine: 1) OpenClaw  2) Hermes Agent"
 
 if [[ "$ENG" == 2 ]]; then
   echo -e "  ${GREEN}Engine: Hermes Agent${NC}"
-  install_hermes "$API_KEY"; BACKEND=hermes
+  if install_hermes "$API_KEY"; then
+    BACKEND=hermes
+  else
+    echo "  Falling back to OpenClaw."
+    echo -n "==> Installing OpenClaw..."
+    npm install -g openclaw@latest >/dev/null 2>&1 &
+    spinner $!
+    BACKEND=openclaw
+  fi
 else
   echo -e "  ${GREEN}Engine: OpenClaw${NC}"
   echo -n "==> Installing OpenClaw..."

@@ -76,6 +76,7 @@ function callAgent(sid, msg) {
     let killed = false
     const timer = setTimeout(() => { killed = true; proc.kill('SIGKILL'); reject(new Error('timed out')) }, TIMEOUT)
     let out = '', err = ''
+    proc.on('error', e => { clearTimeout(timer); reject(new Error(`${BACKEND} not found: ${e.message}`)) })
     proc.stdout.on('data', d => out += d)
     proc.stderr.on('data', d => err += d)
     proc.on('close', code => {
