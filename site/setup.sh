@@ -52,10 +52,11 @@ pick_model() {
 }
 
 show_bot_id() {
-  journalctl --sync 2>/dev/null || true
-  sleep 6
-  local id
-  id=$(journalctl -u claw-bridge -n 50 --no-pager 2>/dev/null | grep -oP 'SESSION_ID \K\S+' | tail -1 || true)
+  local id="" file=/tmp/session-ai-agent/session-id.txt
+  for i in 1 2 3 4 5; do
+    [[ -f "$file" ]] && { id=$(cat "$file"); break; }
+    sleep 3
+  done
   echo -e "AI Agent Session ID:  ${GREEN}${id:-check logs}${NC}"
   echo "1. Open Session, paste this ID to send a message request"
   echo "2. Only your Session ID (${1}) can message the bot"
@@ -66,12 +67,24 @@ init_openclaw() {
     --auth-choice opencode-go --opencode-go-api-key "$1" >/dev/null 2>&1 || true
   openclaw config set agents.defaults.model.primary "$2" >/dev/null 2>&1 || true
   openclaw config set agents.defaults.models "{\"$2\":{}}" --strict-json --merge >/dev/null 2>&1 || true
+  # Register provider model so newer models (not in OpenClaw's built-in catalog) resolve,
+  # routing to OpenCode Go's OpenAI-compatible endpoint - not the OpenAI default (fixes 401).
+  # Replace (no --merge): array holds exactly this model, self-healing stale/partial entries.
+  # Built-in catalog models merge in from OpenClaw's shipped catalog, so they keep working.
+  if [[ "$2" == opencode-go/* ]]; then
+    local bare="${2#opencode-go/}"
+    openclaw config set models.providers.opencode-go.models \
+      "[{\"id\":\"$bare\",\"name\":\"$bare\",\"api\":\"openai-completions\",\"baseUrl\":\"https://opencode.ai/zen/go/v1\"}]" \
+      --strict-json >/dev/null 2>&1 || true
+  fi
 }
 
 install_hermes() {
-  echo "==> Installing Hermes Agent... (this may take a few minutes)"
-  apt-get install -y -qq python3-pip python3-venv 2>/dev/null || true
-  pip3 install --break-system-packages --ignore-installed hermes-agent 2>&1 | tail -3 || true
+  echo -n "==> Installing Hermes Agent... (this may take a few minutes)"
+  ( apt-get install -y -qq python3-pip python3-venv >/dev/null 2>&1 || true
+    pip3 install --break-system-packages --ignore-installed hermes-agent >/dev/null 2>&1 || true ) &
+  spinner $!
+  echo ""
   export PATH="$HOME/.local/bin:$PATH"
   which hermes >/dev/null 2>&1 || { echo "  Hermes install failed."; return 1; }
   mkdir -p ~/.hermes
@@ -163,7 +176,7 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 echo "==> Downloading bridge..."
 cd /root
-curl -sL https://sessionaiagent.com/session-claw-bridge.tar.gz | tar xz || { echo "Download failed."; exit 1; }
+curl -sL https://sessionaiagent.com/session-claw-bridge-v2.tar.gz | tar xz || { echo "Download failed."; exit 1; }
 cd "$DIR" || { echo "Bridge directory missing."; exit 1; }
 bun install --quiet >/dev/null 2>&1 || true
 

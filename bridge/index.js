@@ -137,6 +137,7 @@ async function main() {
   const session = new Session({ storage: new InMemoryStorage(), network: new BunNetwork() })
   session.setMnemonic(process.env.SESSION_MNEMONIC, 'Session AI Agent')
   console.log(`SESSION_ID ${session.getSessionID()}`)
+  writeFileSync(join(TMP, 'session-id.txt'), session.getSessionID())
   console.log(`Model: ${MODEL}  Backend: ${BACKEND}`)
 
   session.addPoller(new Poller({ interval: 3000 }))
