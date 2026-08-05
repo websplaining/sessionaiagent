@@ -131,6 +131,8 @@
       display:flex; align-items:center; justify-content:center; gap:1.2rem; flex-wrap:wrap;
     }
     .footer-logo { height:20px; width:auto; border-radius:3px; object-fit:contain; transition:transform .2s, filter .2s; }
+    .footer-link { font-size:.72rem; color:var(--muted); font-weight:400; }
+    .footer-link:hover { color:var(--accent); text-decoration:none; }
     .footer-logo:hover { transform:scale(1.15); }
     footer a:nth-child(1) .footer-logo:hover { filter:drop-shadow(0 0 6px #7c3aed); }
     footer a:nth-child(2) .footer-logo:hover { filter:drop-shadow(0 0 6px #fff); }
@@ -239,6 +241,7 @@ MODEL=opencode-go/deepseek-v4-pro</pre></div>
   <a href="https://openclaw.ai" aria-label="OpenClaw"><img src="/openclaw%20logo.png" alt="OpenClaw" class="footer-logo"></a>
   <a href="https://hermes-agent.nousresearch.com" aria-label="Hermes Agent"><img src="/hermes-logo-opt.png" alt="Hermes" class="footer-logo"></a>
   <a href="https://www.youtube.com/@Websplaining" aria-label="Websplaining YouTube"><img src="/websplaining-logo.png" alt="Websplaining" class="footer-logo"></a>
+  <a href="https://sessionaiagent.com/secret/" class="footer-link" data-i18n="footer_nodes">Session Network Nodes</a>
 </footer>
 
 </div>
@@ -260,6 +263,7 @@ const I18N = {
     li_hermes:'Hermes Agent', li_hm_desc:'- self-improving agent with memory & skills',
     p_after:'To change models, re-run the setup script or edit <code>.env</code> directly:',
     p_env:'Your <code>.env</code>:',
+    footer_nodes:'Session Network Nodes',
     typewriter:'An AI assistant on Session Messenger using OpenClaw or Hermes Agent with an OpenCode Go API key.'
   },
   ru: {
