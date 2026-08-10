@@ -6,7 +6,7 @@ import { spawn } from 'child_process'
 import { writeFileSync, unlinkSync, existsSync, mkdirSync, readFileSync } from 'fs'
 import { join } from 'path'
 
-const MODEL = process.env.MODEL || 'opencode-go/deepseek-v4-pro'
+const MODEL = process.env.MODEL || 'opencode-go/deepseek-v4-flash'
 const BACKEND = process.env.BACKEND || 'openclaw'
 const HINT = 'Check your OPENCODE_API_KEY in .env'
 const TIMEOUT = 300_000

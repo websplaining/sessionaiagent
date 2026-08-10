@@ -4,8 +4,8 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 DIR=/root/session-claw-bridge
 API=https://opencode.ai/zen/go/v1/models
-FALLBACK=(glm-5.1 glm-5 kimi-k2.6 deepseek-v4-pro deepseek-v4-flash mimo-v2.5 minimax-m2.7 qwen3.7-max qwen3.6-plus)
-DEFAULT_MODEL=opencode-go/deepseek-v4-pro
+FALLBACK=(deepseek-v4-flash kimi-k3 glm-5.2 deepseek-v4-pro grok-4.5 qwen3.8-max mimo-v2.5 minimax-m3 hy3)
+DEFAULT_MODEL=opencode-go/deepseek-v4-flash
 
 echo ""
 echo "  Session AI Agent"
@@ -42,7 +42,7 @@ pick_model() {
   local -n list=$1 outvar=$2
   for i in "${!list[@]}"; do printf " %2s) opencode-go/%s\n" "$((i+1))" "${list[$i]}"; done
   echo ""
-  read -p "Pick a number (or type model) [deepseek-v4-pro]: " p </dev/tty
+  read -p "Pick a number (or type model) [${DEFAULT_MODEL#opencode-go/}]: " p </dev/tty
   if [[ "$p" =~ ^[0-9]+$ && "$p" -ge 1 && "$p" -le ${#list[@]} ]]; then
     outvar="opencode-go/${list[$((p-1))]}"
   elif [[ -n "$p" ]]; then outvar="$p"
