@@ -2,6 +2,8 @@
 
 Run an AI agent on Session Messenger. Private. Anonymous. No phone or email required.
 
+![Session AI Agent preview](screenshot.png)
+
 ## Quick Start
 ```bash
 curl -sL https://sessionaiagent.com/setup.sh | bash
