@@ -212,7 +212,7 @@
 
 <h2 id="opencode"><a href="https://opencode.ai/go?ref=9Q6GKAZPK6"><img src="/opencode%20logo.png" alt="" class="h2-logo"></a> OpenCode <a href="https://opencode.ai/go?ref=9Q6GKAZPK6"><img src="/go%20logo.png" alt="Go" class="h2-logo"></a></h2>
 <p><span data-i18n="p_go1">Session AI Agent runs on</span> <a href="https://opencode.ai/go?ref=9Q6GKAZPK6">OpenCode Go</a> - <span data-i18n="p_go2">a subscription for coding models including DeepSeek, GLM, Kimi, Qwen, and more.</span> <a href="https://opencode.ai/go?ref=9Q6GKAZPK6" data-i18n="use_link">Use this link</a> <span data-i18n="p_go3">for your first month at $5</span> <span data-i18n="p_go4">(then $10/month).</span></p>
-<p data-i18n="p_models">The script fetches available models live during setup. You pick by number. Default: <code>opencode-go/deepseek-v4-pro</code>.</p>
+<p data-i18n="p_models">The script fetches available models live during setup. You pick by number. Default: <code>opencode-go/deepseek-v4-flash</code>.</p>
 
 <h2 id="engines" data-i18n="h_engines">Agent Engines</h2>
 <p data-i18n="p_engines">Choose between two AI engines during setup:</p>
@@ -232,7 +232,7 @@
 <div class="code"><pre>SESSION_MNEMONIC="your 13 words"
 OWNER_SESSION_ID=05abc...
 OPENCODE_API_KEY=...
-MODEL=opencode-go/deepseek-v4-pro</pre></div>
+MODEL=opencode-go/deepseek-v4-flash</pre></div>
 
 <footer>
   <a href="https://kamatera.sjv.io/c/1245219/3024352/36439" aria-label="Kamatera"><img src="/kamatera.png" alt="Kamatera" class="footer-logo"></a>
@@ -257,7 +257,7 @@ const I18N = {
     note_rerun1:'After setup, the bot\'s Session ID is printed. Paste it into Session to send a message request. Only your Session ID can message the bot.',
     note_rerun2:'Re-run the script anytime to', change_model:'change model', uninstall:'uninstall', or:'or',
     p_go1:'Session AI Agent runs on', p_go2:'a subscription for coding models including DeepSeek, GLM, Kimi, Qwen, and more.', use_link:'Use this link', p_go3:'for your first month at $5', p_go4:'(then $10/month).',
-    p_models:'The script fetches available models live during setup. You pick by number. Default: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'The script fetches available models live during setup. You pick by number. Default: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'Choose between two AI engines during setup:',
     li_openclaw:'OpenClaw', li_oc_desc:'- multi-channel gateway agent (default)',
     li_hermes:'Hermes Agent', li_hm_desc:'- self-improving agent with memory & skills',
@@ -275,7 +275,7 @@ const I18N = {
     note_rerun1:'После установки отобразится Session ID бота. Вставьте его в Session. Только ваш Session ID может отправлять сообщения боту.',
     note_rerun2:'Запустите скрипт снова чтобы', change_model:'сменить модель', uninstall:'удалить', or:'или',
     p_go1:'Session AI Agent работает на', p_go2:'подписке с моделями DeepSeek, GLM, Kimi, Qwen и др.', use_link:'Используйте ссылку', p_go3:'для первого месяца за $5', p_go4:'(затем $10/мес).',
-    p_models:'Скрипт загружает доступные модели во время установки. Выбор по номеру. По умолчанию: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'Скрипт загружает доступные модели во время установки. Выбор по номеру. По умолчанию: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'Выберите один из двух AI движков при установке:',
     li_openclaw:'OpenClaw', li_oc_desc:'- многоканальный шлюзовой агент (по умолчанию)',
     li_hermes:'Hermes Agent', li_hm_desc:'- самообучающийся агент с памятью и навыками',
@@ -292,7 +292,7 @@ const I18N = {
     note_rerun1:'Tras la instalación, se muestra el Session ID del bot. Pégalo en Session. Solo tu Session ID puede enviar mensajes al bot.',
     note_rerun2:'Vuelve a ejecutar el script para', change_model:'cambiar modelo', uninstall:'desinstalar', or:'o',
     p_go1:'Session AI Agent funciona con', p_go2:'una suscripción con modelos DeepSeek, GLM, Kimi, Qwen y más.', use_link:'Usa este enlace', p_go3:'para tu primer mes a $5', p_go4:'(luego $10/mes).',
-    p_models:'El script obtiene los modelos disponibles durante la instalación. Eliges por número. Por defecto: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'El script obtiene los modelos disponibles durante la instalación. Eliges por número. Por defecto: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'Elige entre dos motores IA durante la instalación:',
     li_openclaw:'OpenClaw', li_oc_desc:'- agente de puerta de enlace multicanal (por defecto)',
     li_hermes:'Hermes Agent', li_hm_desc:'- agente auto-mejorable con memoria y habilidades',
@@ -309,7 +309,7 @@ const I18N = {
     note_rerun1:'بعد التثبيت، سيظهر Session ID للبوت. الصقه في Session. فقط Session ID الخاص بك يمكنه مراسلة البوت.',
     note_rerun2:'أعد تشغيل السكريبت لـ', change_model:'تغيير النموذج', uninstall:'إلغاء التثبيت', or:'أو',
     p_go1:'يعمل Session AI Agent على', p_go2:'اشتراك مع نماذج DeepSeek, GLM, Kimi, Qwen وغيرها.', use_link:'استخدم هذا الرابط',     p_go3:'لشهرك الأول بـ $5', p_go4:'(ثم 10$/شهر).',
-    p_models:'يجلب السكريبت النماذج المتاحة أثناء التثبيت. تختار بالرقم. الافتراضي: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'يجلب السكريبت النماذج المتاحة أثناء التثبيت. تختار بالرقم. الافتراضي: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'اختر بين محركي ذكاء اصطناعي أثناء التثبيت:',
     li_openclaw:'OpenClaw', li_oc_desc:'- وكيل بوابة متعدد القنوات (افتراضي)',
     li_hermes:'Hermes Agent', li_hm_desc:'- وكيل ذاتي التحسين مع ذاكرة ومهارات',
@@ -326,7 +326,7 @@ const I18N = {
     note_rerun1:'安装后，会显示机器人的 Session ID。在 Session 中粘贴即可发消息。只有你的 Session ID 可以发消息给机器人。',
     note_rerun2:'重新运行脚本以', change_model:'更换模型', uninstall:'卸载', or:'或',
     p_go1:'Session AI 代理运行于', p_go2:'订阅服务，包含 DeepSeek、GLM、Kimi、Qwen 等模型。', use_link:'使用此链接',     p_go3:'首月仅需 $5', p_go4:'（之后 $10/月）。',
-    p_models:'脚本在安装时获取可用模型。按编号选择。默认：<code>opencode-go/deepseek-v4-pro</code>。',
+    p_models:'脚本在安装时获取可用模型。按编号选择。默认：<code>opencode-go/deepseek-v4-flash</code>。',
     p_engines:'安装时选择两个 AI 引擎之一：',
     li_openclaw:'OpenClaw', li_oc_desc:'- 多渠道网关代理（默认）',
     li_hermes:'Hermes Agent', li_hm_desc:'- 带记忆和技能的自我改进代理',
@@ -343,7 +343,7 @@ const I18N = {
     note_rerun1:'セットアップ後、ボットのSession IDが表示されます。Sessionに貼り付けてメッセージを送信。あなたのSession IDのみがボットにメッセージできます。',
     note_rerun2:'スクリプトを再実行して', change_model:'モデル変更', uninstall:'アンインストール', or:'または',
     p_go1:'Session AI エージェントは', p_go2:'DeepSeek、GLM、Kimi、Qwenなどのモデルを含むサブスクリプションで動作します。', use_link:'このリンクを使用',     p_go3:'して初月 $5', p_go4:'（その後$10/月）。',
-    p_models:'スクリプトはセットアップ時に利用可能なモデルを取得します。番号で選択。デフォルト：<code>opencode-go/deepseek-v4-pro</code>。',
+    p_models:'スクリプトはセットアップ時に利用可能なモデルを取得します。番号で選択。デフォルト：<code>opencode-go/deepseek-v4-flash</code>。',
     p_engines:'セットアップ時に2つのAIエンジンから選択：',
     li_openclaw:'OpenClaw', li_oc_desc:'- マルチチャンネルゲートウェイエージェント（デフォルト）',
     li_hermes:'Hermes Agent', li_hm_desc:'- 記憶とスキルを持つ自己改善エージェント',
@@ -360,7 +360,7 @@ const I18N = {
     note_rerun1:'सेटअप के बाद, बॉट का Session ID दिखाया जाएगा। इसे Session में पेस्ट करें। केवल आपका Session ID बॉट को मैसेज कर सकता है।',
     note_rerun2:'स्क्रिप्ट फिर से चलाएं', change_model:'मॉडल बदलें', uninstall:'अनइंस्टॉल करें', or:'या',
     p_go1:'Session AI Agent', p_go2:'सब्सक्रिप्शन पर चलता है जिसमें DeepSeek, GLM, Kimi, Qwen और अन्य मॉडल शामिल हैं।', use_link:'यह लिंक उपयोग करें',     p_go3:'पहले महीने के लिए $5', p_go4:'(फिर $10/माह)।',
-    p_models:'स्क्रिप्ट सेटअप के दौरान उपलब्ध मॉडल लाती है। नंबर से चुनें। डिफ़ॉल्ट: <code>opencode-go/deepseek-v4-pro</code>।',
+    p_models:'स्क्रिप्ट सेटअप के दौरान उपलब्ध मॉडल लाती है। नंबर से चुनें। डिफ़ॉल्ट: <code>opencode-go/deepseek-v4-flash</code>।',
     p_engines:'सेटअप के दौरान दो AI इंजन में से चुनें:',
     li_openclaw:'OpenClaw', li_oc_desc:'- मल्टी-चैनल गेटवे एजेंट (डिफ़ॉल्ट)',
     li_hermes:'Hermes Agent', li_hm_desc:'- मेमोरी और स्किल्स वाला स्व-सुधार एजेंट',
@@ -377,7 +377,7 @@ const I18N = {
     note_rerun1:'Após a instalação, o Session ID do bot é exibido. Cole no Session para enviar uma mensagem. Apenas seu Session ID pode enviar mensagens ao bot.',
     note_rerun2:'Execute o script novamente para', change_model:'trocar modelo', uninstall:'desinstalar', or:'ou',
     p_go1:'Session AI Agent roda no', p_go2:'uma assinatura com modelos DeepSeek, GLM, Kimi, Qwen e mais.', use_link:'Use este link',     p_go3:'para seu primeiro mês por $5', p_go4:'(depois $10/mês).',
-    p_models:'O script busca modelos disponíveis durante a instalação. Escolha por número. Padrão: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'O script busca modelos disponíveis durante a instalação. Escolha por número. Padrão: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'Escolha entre dois motores de IA durante a instalação:',
     li_openclaw:'OpenClaw', li_oc_desc:'- agente de gateway multicanal (padrão)',
     li_hermes:'Hermes Agent', li_hm_desc:'- agente auto-melhorável com memória e habilidades',
@@ -394,7 +394,7 @@ const I18N = {
     note_rerun1:'Après l\'installation, le Session ID du bot s\'affiche. Collez-le dans Session pour envoyer un message. Seul votre Session ID peut envoyer des messages au bot.',
     note_rerun2:'Relancez le script pour', change_model:'changer de modèle', uninstall:'désinstaller', or:'ou',
     p_go1:'Session AI Agent fonctionne avec', p_go2:'un abonnement incluant DeepSeek, GLM, Kimi, Qwen et plus.', use_link:'Utilisez ce lien',     p_go3:'pour votre premier mois à $5', p_go4:'(puis 10$/mois).',
-    p_models:'Le script récupère les modèles disponibles lors de l\'installation. Choisissez par numéro. Défaut : <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'Le script récupère les modèles disponibles lors de l\'installation. Choisissez par numéro. Défaut : <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'Choisissez entre deux moteurs IA lors de l\'installation :',
     li_openclaw:'OpenClaw', li_oc_desc:'- agent passerelle multicanal (défaut)',
     li_hermes:'Hermes Agent', li_hm_desc:'- agent auto-améliorable avec mémoire et compétences',
@@ -411,7 +411,7 @@ const I18N = {
     note_rerun1:'Na installatie wordt het Session ID van de bot getoond. Plak het in Session om een bericht te sturen. Alleen jouw Session ID kan berichten sturen naar de bot.',
     note_rerun2:'Voer het script opnieuw uit om', change_model:'model te wijzigen', uninstall:'verwijderen', or:'of',
     p_go1:'Session AI Agent draait op', p_go2:'een abonnement met modellen zoals DeepSeek, GLM, Kimi, Qwen en meer.', use_link:'Gebruik deze link', p_go3:'voor je eerste maand voor', p_go4:'(daarna $10/maand).',
-    p_models:'Het script haalt beschikbare modellen op tijdens installatie. Kies op nummer. Standaard: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'Het script haalt beschikbare modellen op tijdens installatie. Kies op nummer. Standaard: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'Kies tussen twee AI-engines tijdens installatie:',
     li_openclaw:'OpenClaw', li_oc_desc:'- multi-channel gateway agent (standaard)',
     li_hermes:'Hermes Agent', li_hm_desc:'- zelfverbeterende agent met geheugen en vaardigheden',
@@ -428,7 +428,7 @@ const I18N = {
     note_rerun1:'설치 후 봇의 Session ID가 표시됩니다. Session에 붙여넣어 메시지를 보내세요. 본인 Session ID만 봇에 메시지를 보낼 수 있습니다.',
     note_rerun2:'스크립트를 다시 실행하여', change_model:'모델 변경', uninstall:'제거', or:'또는',
     p_go1:'Session AI 에이전트는', p_go2:'DeepSeek, GLM, Kimi, Qwen 등의 모델을 포함한 구독으로 작동합니다.', use_link:'이 링크 사용', p_go3:'첫 달', p_go4:'(이후 월 $10).',
-    p_models:'설치 중 사용 가능한 모델을 가져옵니다. 번호로 선택. 기본값: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'설치 중 사용 가능한 모델을 가져옵니다. 번호로 선택. 기본값: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'설치 중 두 AI 엔진 중 선택:',
     li_openclaw:'OpenClaw', li_oc_desc:'- 멀티채널 게이트웨이 에이전트 (기본)',
     li_hermes:'Hermes Agent', li_hm_desc:'- 메모리와 스킬을 갖춘 자기 개선 에이전트',
@@ -445,7 +445,7 @@ const I18N = {
     note_rerun1:'پس از نصب، Session ID ربات نمایش داده می‌شود. آن را در Session پیست کنید. فقط Session ID شما می‌تواند به ربات پیام دهد.',
     note_rerun2:'اسکریپت را دوباره اجرا کنید برای', change_model:'تغییر مدل', uninstall:'حذف', or:'یا',
     p_go1:'Session AI Agent روی', p_go2:'یک اشتراک شامل مدل‌های DeepSeek، GLM، Kimi، Qwen و بیشتر اجرا می‌شود.', use_link:'از این لینک استفاده کنید', p_go3:'برای ماه اول', p_go4:'(سپس ۱۰$/ماه).',
-    p_models:'اسکریپت مدل‌های موجود را هنگام نصب دریافت می‌کند. با شماره انتخاب کنید. پیش‌فرض: <code>opencode-go/deepseek-v4-pro</code>.',
+    p_models:'اسکریپت مدل‌های موجود را هنگام نصب دریافت می‌کند. با شماره انتخاب کنید. پیش‌فرض: <code>opencode-go/deepseek-v4-flash</code>.',
     p_engines:'هنگام نصب بین دو موتور هوش مصنوعی انتخاب کنید:',
     li_openclaw:'OpenClaw', li_oc_desc:'- عامل دروازه چند کاناله (پیش‌فرض)',
     li_hermes:'Hermes Agent', li_hm_desc:'- عامل خود-بهبود با حافظه و مهارت‌ها',
