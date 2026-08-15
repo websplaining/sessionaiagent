@@ -1,4 +1,4 @@
-# <img src="site/favicon-64.png" width="24"> Session AI Agent
+# <img src="site/favicon-64.png" width="24"> [Session AI Agent](https://sessionaiagent.com)
 
 Run an AI agent on Session Messenger. Private. Anonymous. No phone or email required.
 

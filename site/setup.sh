@@ -96,17 +96,20 @@ install_hermes() {
 
 if [[ -f "$DIR/.env" ]]; then
   source <(grep -E '^(MODEL|BACKEND|OPENCODE_API_KEY|OWNER_SESSION_ID)=' "$DIR/.env" 2>/dev/null || true)
+  while true; do
   echo "Already installed."
   echo -e "  Engine: ${GREEN}${BACKEND:-openclaw}${NC}"
   echo -e "  Model:  ${GREEN}${MODEL:-none}${NC}"
   echo ""
   echo "  1) Change model"
   echo "  2) Switch engine"
-  echo "  3) Uninstall"
+  echo "  3) View Session ID"
+  echo "  4) Uninstall"
+  echo "  5) Exit"
   echo ""
-  read -p "Choice [1-3]: " act </dev/tty
+  read -p "Choice [1-5]: " act </dev/tty
 
-  if [[ "$act" == 3 ]]; then
+  if [[ "$act" == 4 ]]; then
     read -p "Uninstall? [y/N]: " yn </dev/tty
     [[ "$yn" =~ ^[Yy] ]] || exit 0
     systemctl stop claw-bridge 2>/dev/null || true
@@ -116,6 +119,12 @@ if [[ -f "$DIR/.env" ]]; then
     rm -rf "$DIR" /root/.openclaw /root/.hermes
     echo -e "${GREEN}Done.${NC}"
     exit 0
+  fi
+
+  if [[ "$act" == 3 ]]; then
+    show_bot_id "$OWNER_SESSION_ID"
+    echo ""
+    continue
   fi
 
   if [[ "$act" == 2 ]]; then
@@ -144,12 +153,17 @@ if [[ -f "$DIR/.env" ]]; then
     echo -n "==> Restarting..."; show_bot_id "$OWNER_SESSION_ID"; exit 0
   fi
 
-  echo ""; fetch_models models; pick_model models NEW
-  echo -n "==> Applying..."
-  sed -i "s|^MODEL=.*|MODEL=$NEW|" "$DIR/.env"
-  [[ "${BACKEND:-openclaw}" == openclaw ]] && init_openclaw "$OPENCODE_API_KEY" "$NEW"
-  systemctl restart claw-bridge
-  echo ""; show_bot_id "$OWNER_SESSION_ID"; exit 0
+  if [[ "$act" == 1 ]]; then
+    echo ""; fetch_models models; pick_model models NEW
+    echo -n "==> Applying..."
+    sed -i "s|^MODEL=.*|MODEL=$NEW|" "$DIR/.env"
+    [[ "${BACKEND:-openclaw}" == openclaw ]] && init_openclaw "$OPENCODE_API_KEY" "$NEW"
+    systemctl restart claw-bridge
+    echo ""; show_bot_id "$OWNER_SESSION_ID"; exit 0
+  fi
+
+  exit 0
+  done
 fi
 
 # ── fresh install ────────────────────────────────────────────────
@@ -235,6 +249,6 @@ echo ""
 
 echo -n "==> Starting..."
 sleep 6 && echo "" && show_bot_id "$OWNER"
-echo "Re-run this script to change model, switch engine, or uninstall."
+echo "Re-run this script to change model, switch engine, view your Session ID, or uninstall."
 echo "Logs:   journalctl -u claw-bridge -f"
 echo "Stop:   systemctl stop claw-bridge"
