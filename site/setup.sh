@@ -67,15 +67,45 @@ init_openclaw() {
     --auth-choice opencode-go --opencode-go-api-key "$1" >/dev/null 2>&1 || true
   openclaw config set agents.defaults.model.primary "$2" >/dev/null 2>&1 || true
   openclaw config set agents.defaults.models "{\"$2\":{}}" --strict-json --merge >/dev/null 2>&1 || true
-  # Register provider model so newer models (not in OpenClaw's built-in catalog) resolve,
-  # routing to OpenCode Go's OpenAI-compatible endpoint - not the OpenAI default (fixes 401).
-  # Replace (no --merge): array holds exactly this model, self-healing stale/partial entries.
-  # Built-in catalog models merge in from OpenClaw's shipped catalog, so they keep working.
+
   if [[ "$2" == opencode-go/* ]]; then
     local bare="${2#opencode-go/}"
-    openclaw config set models.providers.opencode-go.models \
-      "[{\"id\":\"$bare\",\"name\":\"$bare\",\"api\":\"openai-completions\",\"baseUrl\":\"https://opencode.ai/zen/go/v1\"}]" \
-      --strict-json >/dev/null 2>&1 || true
+    local tmp entries
+
+    # Full field set newer OpenClaw builds expect, so validation doesn't silently reject
+    # the entry. Preserves already-registered models instead of replacing the whole array.
+    entries=$(python3 -c '
+import json, sys
+entry = {
+    "id": sys.argv[1], "name": sys.argv[1],
+    "api": "openai-completions",
+    "baseUrl": "https://opencode.ai/zen/go/v1",
+    "reasoning": False,
+    "input": ["text"],
+    "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0},
+    "contextWindow": 200000,
+    "maxTokens": 8192,
+}
+try:
+    cur = json.loads(sys.argv[2] or "[]")
+except Exception:
+    cur = []
+arr = [e for e in cur if e.get("id") != sys.argv[1]] + [entry]
+print(json.dumps(arr))
+' "$bare" "$(openclaw config get models.providers.opencode-go.models --json 2>/dev/null || echo '[]')") \
+      || entries="[{\"id\":\"$bare\",\"name\":\"$bare\",\"api\":\"openai-completions\",\"baseUrl\":\"https://opencode.ai/zen/go/v1\",\"reasoning\":false,\"input\":[\"text\"],\"cost\":{\"input\":0,\"output\":0,\"cacheRead\":0,\"cacheWrite\":0},\"contextWindow\":200000,\"maxTokens\":8192}]"
+
+    tmp=$(mktemp)
+    printf '{ models: { providers: { "opencode-go": { models: %s } } } }\n' "$entries" > "$tmp"
+    openclaw config patch --file "$tmp" >/dev/null 2>&1
+    rm -f "$tmp"
+
+    # Verify it actually registered - no more silent failure.
+    if ! openclaw config get models.providers.opencode-go.models --json 2>/dev/null | grep -q "\"id\": \"$bare\""; then
+      echo "  WARNING: could not register $bare in OpenClaw providers."
+      echo "  Add { id: \"$bare\", name: \"$bare\", api: \"openai-completions\", baseUrl: \"https://opencode.ai/zen/go/v1\" }"
+      echo "  to models.providers.opencode-go.models manually."
+    fi
   fi
 }
 
