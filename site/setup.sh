@@ -232,9 +232,8 @@ read -p "Your Session ID (owner): " OWNER </dev/tty
 while [[ -z "$OWNER" ]]; do read -p "Required: " OWNER </dev/tty; done
 
 echo ""
-PRICE=$(curl -sf --max-time 5 "https://opencode.ai/go" 2>/dev/null | grep -oP '\$\d+ for your first month, then \$\d+/month' | head -1 || true)
-echo -e "You need an OpenCode Go subscription."
-echo -e "${PRICE:-\$5 first month, then \$10/month} - use my link:"
+echo -e "You need an OpenCode Go subscription (\$10/month)."
+echo -e "Subscribing via my link gives you \$5 in usage credit:"
 echo -e "  ${GREEN}https://opencode.ai/go?ref=9Q6GKAZPK6${NC}"
 read -p "API key: " API_KEY </dev/tty
 
