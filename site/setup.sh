@@ -243,7 +243,7 @@ if [[ -f "$DIR/.env" ]]; then
   fi
 
   if [[ "$act" == 2 ]]; then
-    echo ""; echo "  1) OpenClaw   2) Hermes Agent"
+    echo ""; echo "  1) OpenClaw   2) Hermes Agent (Enter = OpenClaw)"
     read -p "Choice [1-2]: " eng </dev/tty
     if [[ "$eng" == 2 ]]; then
       if install_hermes "$OPENCODE_API_KEY"; then
@@ -326,7 +326,7 @@ echo -e "Subscribing via my link gives you \$5 in usage credit:"
 echo -e "  ${GREEN}https://opencode.ai/go?ref=9Q6GKAZPK6${NC}"
 read -p "API key: " API_KEY </dev/tty
 
-echo ""; echo "AI engine: 1) OpenClaw  2) Hermes Agent"
+echo ""; echo "AI engine: 1) OpenClaw  2) Hermes Agent (Enter = OpenClaw)"
   read -p "Choice [1-2]: " ENG </dev/tty
 
 if [[ "$ENG" == 2 ]]; then
