@@ -121,16 +121,47 @@ print(json.dumps(arr))
 }
 
 install_hermes() {
-  echo -n "==> Installing Hermes Agent... (this may take a few minutes)"
-  ( curl -fsSL https://hermes-agent.nousresearch.com/install.sh > /tmp/hermes-install.sh 2>/dev/null
-    bash /tmp/hermes-install.sh --non-interactive > /tmp/hermes-install.log 2>&1
-    rm -f /tmp/hermes-install.sh ) &
-  spinner $!
-  echo ""
+  echo "==> Installing Hermes Agent..."
+  local log=/tmp/hermes-install.log start=$SECONDS PY="" pid="" last="" venv_ok=""
+  : > "$log"
+  rm -rf "$HOME/.hermes/venv"
+
+  # Pick a usable Python (<3.14): python3.13 → python3.12 → apt install 3.12+venv → uv.
+  # Never silently fall back to a 3.14+ python: it can only install the broken 0.15.x build.
+  for c in python3.13 python3.12; do
+    if command -v "$c" >/dev/null 2>&1 && "$c" -m venv "$HOME/.hermes/venv" >/dev/null 2>&1; then
+      PY="$c"; venv_ok=1; break
+    fi
+  done
+  if [[ -z "$venv_ok" ]] && apt-get install -y -qq python3.12 python3.12-venv >/dev/null 2>&1 && \
+     command -v python3.12 >/dev/null 2>&1 && python3.12 -m venv "$HOME/.hermes/venv" >/dev/null 2>&1; then
+    PY=python3.12; venv_ok=1
+  fi
+  if [[ -z "$venv_ok" ]]; then
+    echo "  No working Python <3.14 found - using uv (downloads its own Python, first run slower)"
+    ( curl -fsSL https://astral.sh/uv/install.sh | sh > "$log" 2>&1
+      "$HOME/.local/bin/uv" venv --python 3.12 --quiet "$HOME/.hermes/venv" >> "$log" 2>&1
+      "$HOME/.local/bin/uv" pip install --python "$HOME/.hermes/venv" --quiet hermes-agent >> "$log" 2>&1
+      ln -sf "$HOME/.hermes/venv/bin/hermes" /usr/local/bin/hermes ) &
+    pid=$!
+  else
+    echo "  Using $PY..."
+    ( "$HOME/.hermes/venv/bin/pip" install --upgrade --quiet hermes-agent >> "$log" 2>&1
+      ln -sf "$HOME/.hermes/venv/bin/hermes" /usr/local/bin/hermes ) &
+    pid=$!
+  fi
+
+  while kill -0 "$pid" 2>/dev/null; do
+    last=$(tail -1 "$log" 2>/dev/null | tr -d '\r' | cut -c1-70)
+    printf "\r  [%02d:%02d] %s   " $(((SECONDS-start)/60)) $(((SECONDS-start)%60)) "${last:-working...}"
+    sleep 2
+  done
+  printf "\r  Install took %dm%02ds          \n" $(((SECONDS-start)/60)) $(((SECONDS-start)%60))
+
   export PATH="$HOME/.local/bin:$PATH"
-  if ! which hermes >/dev/null 2>&1; then
+  if ! which hermes >/dev/null 2>&1 || [[ -L /usr/local/bin/hermes && ! -e /usr/local/bin/hermes ]]; then
     echo "  Hermes install failed - last log lines:"
-    tail -5 /tmp/hermes-install.log 2>/dev/null
+    tail -5 "$log" 2>/dev/null
     return 1
   fi
   V=$(hermes --version 2>&1 | head -1)
@@ -138,11 +169,23 @@ install_hermes() {
   echo "  Hermes installed: $V"
   if [[ -n "$VM" ]] && (( $(echo "$VM" | cut -d. -f2) < 16 )); then
     echo "  ERROR: old Hermes build ($VM) - one-shot replies are broken."
-    echo "  Re-run after fixing: rm -rf ~/.hermes && hermes update"
+    echo "  Re-run after fixing: rm -rf ~/.hermes && apt-get install python3.12 python3.12-venv"
     return 1
   fi
   mkdir -p ~/.hermes
   echo "OPENCODE_GO_API_KEY=${1:-$API_KEY}" > ~/.hermes/.env
+
+  local bare model out
+  model=${MODEL:-opencode-go/deepseek-v4-flash}
+  bare=${model#opencode-go/}
+  echo "  Testing one-shot reply (model: $model)..."
+  out=$(timeout 90 hermes -z "Reply with exactly: OK" --provider opencode-go --model "$bare" 2>&1 | head -c 300)
+  if [[ -z "$out" || "$out" == *Error* || "$out" == *error* ]]; then
+    echo "  WARNING: smoke test returned no usable reply (${out:-empty})."
+    echo "  Check your OpenCode Go API key, then re-run setup."
+  else
+    echo "  Smoke test OK: ${out:0:60}"
+  fi
 }
 
 # ── manage menu ──────────────────────────────────────────────────
