@@ -26,6 +26,37 @@ spinner() {
   printf "\r  \r"
 }
 
+ensure_swap() {
+  local ram
+  ram=$(free -m | awk 'NR==2{print $2}')
+  if [[ "$ram" -lt 2048 ]] && ! swapon --show 2>/dev/null | grep -q '/'; then
+    echo "  Adding 1G swapfile (low-memory box)..."
+    fallocate -l 1G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=1024 2>/dev/null
+    if chmod 600 /swapfile && mkswap /swapfile >/dev/null 2>&1 && swapon /swapfile >/dev/null 2>&1; then
+      echo "  Swap added - OpenClaw install should fit now."
+    else
+      rm -f /swapfile
+      echo "  WARNING: could not add swap (OpenClaw install may fail on 1GB boxes)."
+    fi
+  fi
+}
+
+install_openclaw() {
+  export PATH="/root/.bun/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+  if which openclaw >/dev/null 2>&1; then return 0; fi
+  ensure_swap
+  echo -n "==> Installing OpenClaw..."
+  npm install -g openclaw@latest --no-audit --no-fund >/dev/null 2>&1 &
+  spinner $!
+  echo ""
+  if which openclaw >/dev/null 2>&1; then
+    return 0
+  fi
+  echo "  OpenClaw install FAILED (likely low memory or network)."
+  echo "  Re-run setup to retry, or choose Hermes Agent instead."
+  return 1
+}
+
 fetch_models() {
   local -n out=$1; out=()
   echo "  Fetching models..."
@@ -63,6 +94,11 @@ show_bot_id() {
 }
 
 init_openclaw() {
+  export PATH="/root/.bun/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+  if ! which openclaw >/dev/null 2>&1; then
+    echo "  ERROR: openclaw binary not found - cannot configure."
+    return 1
+  fi
   openclaw onboard --accept-risk --non-interactive --skip-health --skip-daemon --skip-bootstrap \
     --auth-choice opencode-go --opencode-go-api-key "$1" >/dev/null 2>&1 || true
   openclaw config set agents.defaults.model.primary "$2" >/dev/null 2>&1 || true
@@ -108,16 +144,21 @@ print(json.dumps(arr))
     rm -f "$tmp"
 
     # Verify it actually registered - no more silent failure.
+    local ok=1
     if ! openclaw config get models.providers.opencode-go.models --json 2>/dev/null | grep -q "\"id\": \"$bare\""; then
       echo "  WARNING: could not register $bare in OpenClaw providers."
       echo "  Add { id: \"$bare\", name: \"$bare\", api: \"openai-completions\", baseUrl: \"https://opencode.ai/zen/go/v1\" }"
       echo "  to models.providers.opencode-go.models manually."
+      ok=0
     fi
     if ! openclaw config get models.providers.opencode-go.headers --json 2>/dev/null | grep -q 'x-opencode-session'; then
       echo "  WARNING: could not register the OpenCode session header."
       echo "  Requests to opencode.ai will be rejected (MissingSessionID)."
+      ok=0
     fi
+    return $((1-ok))
   fi
+  return 0
 }
 
 install_hermes() {
@@ -256,16 +297,14 @@ if [[ -f "$DIR/.env" ]]; then
         echo "  Hermes installation failed. Staying on OpenClaw."
       fi
     else
-      which openclaw >/dev/null 2>&1 || {
-        echo -n "==> Installing OpenClaw..."
-        export PATH="/root/.bun/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
-        npm install -g openclaw@latest >/dev/null 2>&1 &
-        spinner $!
-      }
-      sed -i 's|^BACKEND=.*|BACKEND=openclaw|' "$DIR/.env"
-      echo -n "==> Configuring OpenClaw..."
-      ( init_openclaw "$OPENCODE_API_KEY" "$MODEL" && timeout 120 openclaw agent --local --session-id warmup --model "$MODEL" --message "Reply with exactly: OK" --json >/dev/null 2>&1 ) & spinner $!
-      echo -e "${GREEN}Switched to OpenClaw.${NC}"
+      if ! which openclaw >/dev/null 2>&1 && ! install_openclaw; then
+        echo "  OpenClaw unavailable. Staying on Hermes."
+      else
+        sed -i 's|^BACKEND=.*|BACKEND=openclaw|' "$DIR/.env"
+        echo -n "==> Configuring OpenClaw..."
+        ( init_openclaw "$OPENCODE_API_KEY" "$MODEL" && timeout 120 openclaw agent --local --session-id warmup --model "$MODEL" --message "Reply with exactly: OK" --json >/dev/null 2>&1 ) & spinner $!
+        echo -e "${GREEN}Switched to OpenClaw.${NC}"
+      fi
     fi
     systemctl restart claw-bridge
     echo -n "==> Restarting..."; show_bot_id "$OWNER_SESSION_ID"; exit 0
@@ -337,16 +376,18 @@ if [[ "$ENG" == 2 ]]; then
     BACKEND=hermes
   else
     echo "  Falling back to OpenClaw."
-    echo -n "==> Installing OpenClaw..."
-    npm install -g openclaw@latest >/dev/null 2>&1 &
-    spinner $!
+    if ! install_openclaw; then
+      echo "  Cannot continue: no engine installed. Re-run after freeing memory."
+      exit 1
+    fi
     BACKEND=openclaw
   fi
 else
   echo -e "  ${GREEN}Engine: OpenClaw${NC}"
-  echo -n "==> Installing OpenClaw..."
-  npm install -g openclaw@latest >/dev/null 2>&1 &
-  spinner $!
+  if ! install_openclaw; then
+    echo "  Cannot continue: no engine installed. Re-run after freeing memory."
+    exit 1
+  fi
   BACKEND=openclaw
 fi
 

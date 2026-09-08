@@ -162,6 +162,22 @@ async function openclawSelfHeal() {
   else console.error('[config] self-heal FAILED:', String(res.err).slice(0, 200))
 }
 
+async function checkEngineInstalled(session) {
+  const bin = BACKEND === 'openclaw' ? 'openclaw' : 'hermes'
+  const r = await run(bin, ['--version'])
+  if (r.code === 0) return
+  console.error(`[engine] ${bin} binary not found (exit ${r.code})`)
+  const owner = process.env.OWNER_SESSION_ID
+  if (owner) {
+    const tip = bin === 'openclaw'
+      ? 'run: npm install -g openclaw@latest, then systemctl restart claw-bridge'
+      : 're-run the setup script to install Hermes properly'
+    try {
+      await session.sendMessage({ to: owner, text: `⚠ ${bin} is not installed on this server. To fix it, ${tip}.` })
+    } catch {}
+  }
+}
+
 async function checkCatalog(session) {
   try {
     const r = await fetch('https://opencode.ai/zen/go/v1/models', { signal: AbortSignal.timeout(10000) })
@@ -271,6 +287,7 @@ async function main() {
   console.log('ready')
   openclawSelfHeal().catch(e => console.error('[config] self-heal error:', e.message))
   checkCatalog(session).catch(e => console.error('[catalog] check error:', e.message))
+  checkEngineInstalled(session).catch(e => console.error('[engine] check error:', e.message))
   const exit = () => { process.exit(0) }
   process.on('SIGINT', exit); process.on('SIGTERM', exit)
 }
