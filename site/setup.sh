@@ -262,7 +262,7 @@ if [[ -f "$DIR/.env" ]]; then
       }
       sed -i 's|^BACKEND=.*|BACKEND=openclaw|' "$DIR/.env"
       echo -n "==> Configuring OpenClaw..."
-      ( init_openclaw "$OPENCODE_API_KEY" "$MODEL" ) & spinner $!
+      ( init_openclaw "$OPENCODE_API_KEY" "$MODEL" && timeout 120 openclaw agent --local --session-id warmup --model "$MODEL" --message "Reply with exactly: OK" --json >/dev/null 2>&1 ) & spinner $!
       echo -e "${GREEN}Switched to OpenClaw.${NC}"
     fi
     systemctl restart claw-bridge
@@ -361,7 +361,7 @@ BACKEND=$BACKEND
 EOF
 if [[ "$BACKEND" == openclaw ]]; then
 echo -n "Configuring OpenClaw..."
-( init_openclaw "$API_KEY" "$MODEL" ) & spinner $!
+( init_openclaw "$API_KEY" "$MODEL" && timeout 120 openclaw agent --local --session-id warmup --model "$MODEL" --message "Reply with exactly: OK" --json >/dev/null 2>&1 ) & spinner $!
 fi
 
 cp "$DIR/claw-bridge.service" /etc/systemd/system/

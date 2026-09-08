@@ -89,9 +89,9 @@ function callAgent(sid, msg) {
       out = out.replace(/\x1b\[[0-9;]*m/g, '').trim()
       try {
         const o = JSON.parse(out)
-        resolve({ text: o?.payloads?.[0]?.text?.trim() || o?.text || o?.output || null })
+        resolve({ text: o?.payloads?.[0]?.text?.trim() || o?.text || o?.output || null, raw: out, code })
       } catch {
-        resolve({ text: out || null })
+        resolve({ text: out || null, raw: out, code })
       }
     })
   })
@@ -179,6 +179,13 @@ async function checkCatalog(session) {
   } catch (e) { console.error('[catalog] check failed:', e.message) }
 }
 
+async function callAgentWithRetry(sid, prompt) {
+  const first = await callAgent(sid, prompt)
+  if (first.text) return first
+  console.warn('[warn] empty reply - retrying once')
+  return callAgent(sid, prompt)
+}
+
 async function sendWithRetry(session, to, text, attempts = 3) {
   for (let i = 1; i <= attempts; i++) {
     try {
@@ -199,7 +206,7 @@ async function processMessage(session, from, sid, msg) {
 
   let r
   try {
-    r = await callAgent(sid, prompt)
+    r = await callAgentWithRetry(sid, prompt)
   } catch (e) {
     if (files.length) try { cleanup(files) } catch {}
     console.error(`Error: ${e.message}`)
@@ -216,9 +223,12 @@ async function processMessage(session, from, sid, msg) {
   if (files.length) try { cleanup(files) } catch {}
 
   const reply = !r.text
-    ? '(no response from backend — the engine replied empty. Check `journalctl -u claw-bridge` and re-run the setup script.)'
+    ? '(no response from backend after 2 attempts - check `journalctl -u claw-bridge` or re-run the setup script.)'
     : r.text
-  if (!r.text) console.log('[warn] empty reply')
+  if (!r.text) {
+    console.log('[warn] empty reply after retry')
+    console.warn(`[empty] ${BACKEND} exit=${r.code} raw=${sanitize(String(r.raw || '')).slice(0, 200)}`)
+  }
 
   try {
     await sendWithRetry(session, from, reply)
