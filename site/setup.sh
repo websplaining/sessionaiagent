@@ -4,7 +4,7 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 DIR=/root/session-claw-bridge
 API=https://opencode.ai/zen/go/v1/models
-FALLBACK=(deepseek-v4-flash kimi-k3 glm-5.2 deepseek-v4-pro grok-4.5 qwen3.8-max mimo-v2.5 minimax-m3 hy3)
+FALLBACK=(deepseek-v4-flash kimi-k3 glm-5.3 glm-5.3-flash deepseek-v4-pro grok-4.5 qwen3.8-max mimo-v2.5 minimax-m3 hy4-preview)
 DEFAULT_MODEL=opencode-go/deepseek-v4-flash
 
 echo ""
@@ -95,8 +95,15 @@ print(json.dumps(arr))
 ' "$bare" "$(openclaw config get models.providers.opencode-go.models --json 2>/dev/null || echo '[]')") \
       || entries="[{\"id\":\"$bare\",\"name\":\"$bare\",\"api\":\"openai-completions\",\"baseUrl\":\"https://opencode.ai/zen/go/v1\",\"reasoning\":false,\"input\":[\"text\"],\"cost\":{\"input\":0,\"output\":0,\"cacheRead\":0,\"cacheWrite\":0},\"contextWindow\":200000,\"maxTokens\":8192}]"
 
+    if ! grep -q '^OPENCODE_SESSION=' "$DIR/.env" 2>/dev/null; then
+      OPENCODE_SESSION=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "saa-$(date +%s)")
+      echo "OPENCODE_SESSION=$OPENCODE_SESSION" >> "$DIR/.env"
+    else
+      OPENCODE_SESSION=${OPENCODE_SESSION:-$(grep -oP '^OPENCODE_SESSION=\K.*' "$DIR/.env" 2>/dev/null)}
+    fi
+
     tmp=$(mktemp)
-    printf '{ models: { providers: { "opencode-go": { models: %s } } } }\n' "$entries" > "$tmp"
+    printf '{ models: { providers: { "opencode-go": { models: %s, headers: { "x-opencode-session": "%s" } } } } }\n' "$entries" "$OPENCODE_SESSION" > "$tmp"
     openclaw config patch --file "$tmp" >/dev/null 2>&1
     rm -f "$tmp"
 
@@ -106,26 +113,42 @@ print(json.dumps(arr))
       echo "  Add { id: \"$bare\", name: \"$bare\", api: \"openai-completions\", baseUrl: \"https://opencode.ai/zen/go/v1\" }"
       echo "  to models.providers.opencode-go.models manually."
     fi
+    if ! openclaw config get models.providers.opencode-go.headers --json 2>/dev/null | grep -q 'x-opencode-session'; then
+      echo "  WARNING: could not register the OpenCode session header."
+      echo "  Requests to opencode.ai will be rejected (MissingSessionID)."
+    fi
   fi
 }
 
 install_hermes() {
   echo -n "==> Installing Hermes Agent... (this may take a few minutes)"
   ( apt-get install -y -qq python3-pip python3-venv >/dev/null 2>&1 || true
-    pip3 install --break-system-packages --ignore-installed hermes-agent >/dev/null 2>&1 || true ) &
+    PY=""
+    for c in python3.13 python3.12; do command -v "$c" >/dev/null 2>&1 && PY="$c" && break; done
+    [ -z "$PY" ] && apt-get install -y -qq python3.12 python3.12-venv >/dev/null 2>&1 && PY=python3.12
+    [ -z "$PY" ] && PY=python3
+    "$PY" -m venv "$HOME/.hermes/venv" >/dev/null 2>&1
+    "$HOME/.hermes/venv/bin/pip" install --upgrade --quiet hermes-agent >/dev/null 2>&1
+    ln -sf "$HOME/.hermes/venv/bin/hermes" /usr/local/bin/hermes ) &
   spinner $!
   echo ""
   export PATH="$HOME/.local/bin:$PATH"
   which hermes >/dev/null 2>&1 || { echo "  Hermes install failed."; return 1; }
+  V=$(hermes --version 2>&1 | head -1)
+  VM=$(echo "$V" | grep -oP 'v\K[0-9]+\.[0-9]+' | head -1)
+  echo "  Hermes installed: $V"
+  if [[ -n "$VM" ]] && (( $(echo "$VM" | cut -d. -f2) < 16 )); then
+    echo "  WARNING: old Hermes build ($VM) - one-shot replies may be broken."
+    echo "  Install python3.12 (apt-get install python3.12 python3.12-venv) and re-run."
+  fi
   mkdir -p ~/.hermes
   echo "OPENCODE_GO_API_KEY=${1:-$API_KEY}" > ~/.hermes/.env
-  echo "  Hermes installed: $(hermes --version 2>&1 | head -1)"
 }
 
 # ── manage menu ──────────────────────────────────────────────────
 
 if [[ -f "$DIR/.env" ]]; then
-  source <(grep -E '^(MODEL|BACKEND|OPENCODE_API_KEY|OWNER_SESSION_ID)=' "$DIR/.env" 2>/dev/null || true)
+  source <(grep -E '^(MODEL|BACKEND|OPENCODE_API_KEY|OWNER_SESSION_ID|OPENCODE_SESSION)=' "$DIR/.env" 2>/dev/null || true)
   while true; do
   echo "Already installed."
   echo -e "  Engine: ${GREEN}${BACKEND:-openclaw}${NC}"

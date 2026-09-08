@@ -99,6 +99,86 @@ function callAgent(sid, msg) {
 
 function sanitize(s) { return (s || '').replace(/(sk-|sk-ant-|ollama-)[^\s]{4,}/g, '$1***') }
 
+const ENV_FILE = join(process.cwd(), '.env')
+const CFG_FILE = join(process.env.HOME || '/root', '.openclaw', 'openclaw.json')
+
+function modelBare() { return MODEL.includes('/') ? MODEL.split('/')[1] : MODEL }
+
+function run(cmd, args) {
+  return new Promise(res => {
+    const p = spawn(cmd, args, { stdio: ['ignore', 'ignore', 'pipe'] })
+    let err = ''
+    p.stderr.on('data', d => err += d)
+    p.on('close', code => res({ code, err }))
+    p.on('error', () => res({ code: -1, err: 'spawn failed' }))
+  })
+}
+
+function envEntry(key) {
+  try {
+    if (!existsSync(ENV_FILE)) return null
+    for (const line of readFileSync(ENV_FILE, 'utf8').split('\n')) {
+      if (line.startsWith(key + '=')) return line.slice(key.length + 1)
+    }
+  } catch {}
+  return null
+}
+
+function persistEnv(key, val) {
+  try {
+    const existing = existsSync(ENV_FILE) ? readFileSync(ENV_FILE, 'utf8') : ''
+    const re = new RegExp(`^${key}=.*$`, 'm')
+    const next = re.test(existing) ? existing.replace(re, `${key}=${val}`) : existing.trimEnd() + `\n${key}=${val}\n`
+    writeFileSync(ENV_FILE, next)
+  } catch (e) { console.error('[config] persist env failed:', e.message) }
+}
+
+async function openclawSelfHeal() {
+  if (BACKEND !== 'openclaw') return
+  let cfg = null
+  try { cfg = JSON.parse(readFileSync(CFG_FILE, 'utf8')) } catch { return console.warn('[config] no openclaw.json — skipping self-heal') }
+  const bare = modelBare()
+  const prov = cfg?.models?.providers?.['opencode-go']
+  const models = Array.isArray(prov?.models) ? prov.models : []
+  const hasModel = models.some(m => (m.id || m.name) === bare)
+  const hasHeader = !!prov?.headers?.['x-opencode-session']
+  if (hasModel && hasHeader) return console.log(`[config] openclaw model+header OK (${bare})`)
+
+  let sid = process.env.OPENCODE_SESSION || envEntry('OPENCODE_SESSION')
+  if (!sid) {
+    sid = (globalThis.crypto?.randomUUID?.() || `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`)
+    persistEnv('OPENCODE_SESSION', sid)
+    console.log('[config] generated OPENCODE_SESSION')
+  }
+  const entry = { id: bare, name: bare, api: 'openai-completions', baseUrl: 'https://opencode.ai/zen/go/v1',
+    reasoning: false, input: ['text'], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 200000, maxTokens: 8192 }
+  const merged = models.some(m => (m.id || m.name) === bare) ? models : [...models.filter(m => m.id !== bare), entry]
+  const patch = { models: { providers: { 'opencode-go': { models: merged, headers: { 'x-opencode-session': sid } } } } }
+  const tmp = join(TMP, 'selfheal-patch.json')
+  writeFileSync(tmp, JSON.stringify(patch))
+  const res = await run('openclaw', ['config', 'patch', '--file', tmp])
+  try { unlinkSync(tmp) } catch {}
+  if (res.code === 0) console.log(`[config] self-heal applied (model=${hasModel ? 'ok' : 'missing'}, header=${hasHeader ? 'ok' : 'missing'})`)
+  else console.error('[config] self-heal FAILED:', String(res.err).slice(0, 200))
+}
+
+async function checkCatalog(session) {
+  try {
+    const r = await fetch('https://opencode.ai/zen/go/v1/models', { signal: AbortSignal.timeout(10000) })
+    const d = await r.json()
+    const ids = Array.isArray(d?.data) ? d.data.map(m => m.id) : []
+    if (!ids.length) return
+    const bare = modelBare()
+    if (!ids.includes(bare)) {
+      console.error(`[catalog] ${MODEL} NOT in live catalog (${ids.length} models)`)
+      const owner = process.env.OWNER_SESSION_ID
+      if (owner) {
+        try { await session.sendMessage({ to: owner, text: `⚠ Your Session AI Agent model (${MODEL}) is not in the current OpenCode Go catalog. Re-run the setup script and pick a new model.` }) } catch {}
+      }
+    } else console.log(`[catalog] ${bare} OK (${ids.length} models)`)
+  } catch (e) { console.error('[catalog] check failed:', e.message) }
+}
+
 async function processMessage(session, from, sid, msg) {
   const files = msg.attachments?.length ? await downloadAttachments(session, msg.attachments) : []
   const prompt = buildPrompt(msg.text, files)
@@ -107,7 +187,10 @@ async function processMessage(session, from, sid, msg) {
   try {
     const r = await callAgent(sid, prompt)
     if (files.length) cleanup(files)
-    if (!r.text) return console.log('[warn] empty reply')
+    if (!r.text) {
+      console.log('[warn] empty reply')
+      return session.sendMessage({ to: from, text: '(no response from backend — the engine replied empty. Check `journalctl -u claw-bridge` and re-run the setup script.)' })
+    }
     await session.sendMessage({ to: from, text: r.text })
     console.log(`[reply]: ${r.text.slice(0, 100)}`)
   } catch (e) {
@@ -150,6 +233,8 @@ async function main() {
   })
 
   console.log('ready')
+  openclawSelfHeal().catch(e => console.error('[config] self-heal error:', e.message))
+  checkCatalog(session).catch(e => console.error('[catalog] check error:', e.message))
   const exit = () => { process.exit(0) }
   process.on('SIGINT', exit); process.on('SIGTERM', exit)
 }
