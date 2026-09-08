@@ -173,13 +173,32 @@ install_hermes() {
     return 1
   fi
   mkdir -p ~/.hermes
-  echo "OPENCODE_GO_API_KEY=${1:-$API_KEY}" > ~/.hermes/.env
+  local HKEY="${1:-$API_KEY}"
+  echo "OPENCODE_GO_API_KEY=$HKEY" > ~/.hermes/.env
+
+  # hermes 0.19 has no native x-opencode-session support (added post-0.19).
+  # Route through a custom provider that injects the header, or opencode.ai
+  # returns 400 MissingSessionID - exactly the bug openclaw had.
+  if ! grep -q '^OPENCODE_SESSION=' "$DIR/.env" 2>/dev/null; then
+    OPENCODE_SESSION=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "saa-$(date +%s)")
+    echo "OPENCODE_SESSION=$OPENCODE_SESSION" >> "$DIR/.env"
+  else
+    OPENCODE_SESSION=${OPENCODE_SESSION:-$(grep -oP '^OPENCODE_SESSION=\K.*' "$DIR/.env" 2>/dev/null)}
+  fi
+  cat > ~/.hermes/config.yaml << EOF
+providers:
+  ocgo:
+    base_url: https://opencode.ai/zen/go/v1
+    api_key: $HKEY
+    extra_headers:
+      x-opencode-session: $OPENCODE_SESSION
+EOF
 
   local bare model out
   model=${MODEL:-opencode-go/deepseek-v4-flash}
   bare=${model#opencode-go/}
   echo "  Testing one-shot reply (model: $model)..."
-  out=$(timeout 90 hermes -z "Reply with exactly: OK" --provider opencode-go --model "$bare" 2>&1 | head -c 300)
+  out=$(timeout 90 hermes -z "Reply with exactly: OK" --provider ocgo --model "$bare" 2>&1 | head -c 300)
   if [[ -z "$out" || "$out" == *Error* || "$out" == *error* ]]; then
     echo "  WARNING: smoke test returned no usable reply (${out:-empty})."
     echo "  Check your OpenCode Go API key, then re-run setup."

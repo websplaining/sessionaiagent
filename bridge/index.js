@@ -65,7 +65,7 @@ function spawnAgent(sid, msg) {
   const env = { ...process.env, HOME: process.env.HOME, PATH: process.env.PATH || '/usr/local/bin:/usr/bin:/bin' }
   if (BACKEND === 'hermes') {
     const model = MODEL.includes('/') ? MODEL.split('/')[1] : MODEL
-    return spawn('hermes', ['-z', msg, '--provider', 'opencode-go', '--model', model], { env, stdio: ['ignore', 'pipe', 'pipe'] })
+    return spawn('hermes', ['-z', msg, '--provider', 'ocgo', '--model', model], { env, stdio: ['ignore', 'pipe', 'pipe'] })
   }
   return spawn('openclaw', ['agent', '--local', '--session-id', sid, '--model', MODEL, '--message', msg, '--json'], { env, stdio: ['ignore', 'pipe', 'pipe'] })
 }
