@@ -217,7 +217,11 @@ if [[ -f "$DIR/.env" ]]; then
   echo -e "  Model:  ${GREEN}${MODEL:-none}${NC}"
   echo ""
   echo "  1) Change model"
-  echo "  2) Switch engine"
+  if [[ "${BACKEND:-openclaw}" == openclaw ]]; then
+    echo -e "  2) Switch engine -> ${GREEN}Hermes Agent${NC}"
+  else
+    echo -e "  2) Switch engine -> ${GREEN}OpenClaw${NC}"
+  fi
   echo "  3) View Session ID"
   echo "  4) Uninstall"
   echo "  5) Exit"
@@ -243,9 +247,7 @@ if [[ -f "$DIR/.env" ]]; then
   fi
 
   if [[ "$act" == 2 ]]; then
-    echo ""; echo "  1) OpenClaw   2) Hermes Agent (Enter = OpenClaw)"
-    read -p "Choice [1-2]: " eng </dev/tty
-    if [[ "$eng" == 2 ]]; then
+    if [[ "${BACKEND:-openclaw}" == openclaw ]]; then
       if install_hermes "$OPENCODE_API_KEY"; then
         sed -i 's|^BACKEND=.*|BACKEND=hermes|' "$DIR/.env"
         grep -q '^OPENCODE_GO_API_KEY=' "$DIR/.env" || echo "OPENCODE_GO_API_KEY=$OPENCODE_API_KEY" >> "$DIR/.env"
