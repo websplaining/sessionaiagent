@@ -179,27 +179,53 @@ async function checkCatalog(session) {
   } catch (e) { console.error('[catalog] check failed:', e.message) }
 }
 
+async function sendWithRetry(session, to, text, attempts = 3) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await session.sendMessage({ to, text })
+      return
+    } catch (e) {
+      if (i === attempts) throw e
+      console.warn(`[send] attempt ${i} failed: ${e.message} - retrying`)
+      await new Promise(r => setTimeout(r, 1000 * i))
+    }
+  }
+}
+
 async function processMessage(session, from, sid, msg) {
   const files = msg.attachments?.length ? await downloadAttachments(session, msg.attachments) : []
   const prompt = buildPrompt(msg.text, files)
   console.log(`[${from}]: ${(msg.text||'').slice(0,200)}${files.length ? ` +${files.length} files` : ''}`)
 
+  let r
   try {
-    const r = await callAgent(sid, prompt)
-    if (files.length) cleanup(files)
-    if (!r.text) {
-      console.log('[warn] empty reply')
-      return session.sendMessage({ to: from, text: '(no response from backend — the engine replied empty. Check `journalctl -u claw-bridge` and re-run the setup script.)' })
-    }
-    await session.sendMessage({ to: from, text: r.text })
-    console.log(`[reply]: ${r.text.slice(0, 100)}`)
+    r = await callAgent(sid, prompt)
   } catch (e) {
     if (files.length) try { cleanup(files) } catch {}
     console.error(`Error: ${e.message}`)
     const txt = e.message?.includes('auth') || e.message?.includes('API key')
       ? `AI not configured. ${HINT}`
       : `Error: ${sanitize(e.message)}`
-    await session.sendMessage({ to: from, text: txt })
+    try {
+      await sendWithRetry(session, from, txt)
+    } catch (e2) {
+      console.error(`[send] error relay failed: ${e2.message}`)
+    }
+    return
+  }
+  if (files.length) try { cleanup(files) } catch {}
+
+  const reply = !r.text
+    ? '(no response from backend — the engine replied empty. Check `journalctl -u claw-bridge` and re-run the setup script.)'
+    : r.text
+  if (!r.text) console.log('[warn] empty reply')
+
+  try {
+    await sendWithRetry(session, from, reply)
+    console.log(`[reply]: ${reply.slice(0, 100)}`)
+  } catch (e) {
+    // Delivery failure (e.g. Session storage RPC blip) - log only, don't spam the user.
+    console.error(`[send] failed after retries: ${e.message}`)
   }
 }
 

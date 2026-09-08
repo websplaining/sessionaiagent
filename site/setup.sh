@@ -261,7 +261,8 @@ if [[ -f "$DIR/.env" ]]; then
         spinner $!
       }
       sed -i 's|^BACKEND=.*|BACKEND=openclaw|' "$DIR/.env"
-      init_openclaw "$OPENCODE_API_KEY" "$MODEL"
+      echo -n "==> Configuring OpenClaw..."
+      ( init_openclaw "$OPENCODE_API_KEY" "$MODEL" ) & spinner $!
       echo -e "${GREEN}Switched to OpenClaw.${NC}"
     fi
     systemctl restart claw-bridge
@@ -272,7 +273,10 @@ if [[ -f "$DIR/.env" ]]; then
     echo ""; fetch_models models; pick_model models NEW
     echo -n "==> Applying..."
     sed -i "s|^MODEL=.*|MODEL=$NEW|" "$DIR/.env"
-    [[ "${BACKEND:-openclaw}" == openclaw ]] && init_openclaw "$OPENCODE_API_KEY" "$NEW"
+    if [[ "${BACKEND:-openclaw}" == openclaw ]]; then
+      echo -n "Configuring OpenClaw..."
+      ( init_openclaw "$OPENCODE_API_KEY" "$NEW" ) & spinner $!
+    fi
     systemctl restart claw-bridge
     echo ""; show_bot_id "$OWNER_SESSION_ID"; exit 0
   fi
@@ -355,7 +359,10 @@ OPENCODE_GO_API_KEY=$API_KEY
 MODEL=$MODEL
 BACKEND=$BACKEND
 EOF
-[[ "$BACKEND" == openclaw ]] && init_openclaw "$API_KEY" "$MODEL"
+if [[ "$BACKEND" == openclaw ]]; then
+echo -n "Configuring OpenClaw..."
+( init_openclaw "$API_KEY" "$MODEL" ) & spinner $!
+fi
 
 cp "$DIR/claw-bridge.service" /etc/systemd/system/
 systemctl daemon-reload && systemctl enable --now claw-bridge
