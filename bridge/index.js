@@ -226,9 +226,15 @@ async function processMessage(session, from, sid, msg) {
   } catch (e) {
     if (files.length) try { cleanup(files) } catch {}
     console.error(`Error: ${e.message}`)
-    const txt = e.message?.includes('auth') || e.message?.includes('API key')
-      ? `AI not configured. ${HINT}`
-      : `Error: ${sanitize(e.message)}`
+    const msg = String(e.message || '')
+    let txt
+    if (/not supported|not available|isn.t on your plan/i.test(msg)) {
+      txt = "This model isn't available on your OpenCode Go plan - re-run the setup script and pick another via Change model."
+    } else if (msg.includes('auth') || msg.includes('API key')) {
+      txt = `AI not configured. ${HINT}`
+    } else {
+      txt = `Error: ${sanitize(msg)}`
+    }
     try {
       await sendWithRetry(session, from, txt)
     } catch (e2) {

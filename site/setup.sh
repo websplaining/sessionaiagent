@@ -77,6 +77,55 @@ fetch_models() {
   [[ ${#out[@]} -eq 0 ]] && out=("${FALLBACK[@]}")
 }
 
+# Filter a model list to what the API key's plan actually supports.
+# 401 with "not supported/not available" = not on plan -> drop.
+verify_models() {
+  local -n list=$1
+  local key=$2 sid=${3:-probe}
+  local full=("${list[@]}")
+  [[ -z "$key" ]] && return 0
+  local CHAT="${API%/models}/chat/completions"
+  echo "  Checking model availability on your plan (${#list[@]} probes)..."
+  local tmpd i=0 m resp code body keep=() keybad=""
+  tmpd=$(mktemp -d)
+for m in "${full[@]}"; do
+    ( resp=$(curl -s --max-time 12 -X POST "$CHAT" \
+        -H "Authorization: Bearer $key" -H "Content-Type: application/json" \
+        -H "x-opencode-session: $sid" \
+        -d "{\"model\":\"$m\",\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}]}" \
+        -w "|%{http_code}")
+      printf '%s|%s' "$m" "$resp" > "$tmpd/$i" ) &
+    i=$((i+1))
+    (( i % 6 == 0 )) && wait
+  done
+  wait
+  for f in "$tmpd"/*; do
+    raw=$(cat "$f")
+    code=${raw##*|}
+    b=${raw%|}
+    m=${b%%|*}
+    b=${b#*|}
+    if [[ "$code" == "401" ]]; then
+      if echo "$b" | grep -qiE 'not supported|not available'; then
+        continue   # not on plan
+      fi
+      if echo "$b" | grep -qiE 'invalid api key|missing'; then keybad=1; fi
+      keep+=("$m")
+    else
+      keep+=("$m")
+    fi
+  done
+  rm -rf "$tmpd"
+  if (( ${#keep[@]} == 0 )); then
+    echo "  WARNING: every model was rejected - your API key may be wrong."
+    echo "  Showing the full catalog instead."
+    list=("${full[@]}")
+  else
+    [[ -n "$keybad" ]] && echo "  NOTE: some 401s looked like key issues - double-check your API key."
+    list=("${keep[@]}")
+  fi
+}
+
 pick_model() {
   local -n list=$1 outvar=$2
   for i in "${!list[@]}"; do printf " %2s) opencode-go/%s\n" "$((i+1))" "${list[$i]}"; done
@@ -319,7 +368,9 @@ if [[ -f "$DIR/.env" ]]; then
   fi
 
   if [[ "$act" == 1 ]]; then
-    echo ""; fetch_models models; pick_model models NEW
+    echo ""; fetch_models models
+    verify_models models "$OPENCODE_API_KEY" "${OPENCODE_SESSION:-probe}"
+    pick_model models NEW
     echo -n "==> Applying..."
     sed -i "s|^MODEL=.*|MODEL=$NEW|" "$DIR/.env"
     if [[ "${BACKEND:-openclaw}" == openclaw ]]; then
@@ -399,7 +450,9 @@ else
   BACKEND=openclaw
 fi
 
-echo ""; fetch_models models; pick_model models MODEL
+echo ""; fetch_models models
+verify_models models "$API_KEY" "$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo probe)"
+pick_model models MODEL
 
 echo -n "==> Configuring..."
 cat > "$DIR/.env" << EOF
