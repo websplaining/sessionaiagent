@@ -122,24 +122,24 @@ print(json.dumps(arr))
 
 install_hermes() {
   echo -n "==> Installing Hermes Agent... (this may take a few minutes)"
-  ( apt-get install -y -qq python3-pip python3-venv >/dev/null 2>&1 || true
-    PY=""
-    for c in python3.13 python3.12; do command -v "$c" >/dev/null 2>&1 && PY="$c" && break; done
-    [ -z "$PY" ] && apt-get install -y -qq python3.12 python3.12-venv >/dev/null 2>&1 && PY=python3.12
-    [ -z "$PY" ] && PY=python3
-    "$PY" -m venv "$HOME/.hermes/venv" >/dev/null 2>&1
-    "$HOME/.hermes/venv/bin/pip" install --upgrade --quiet hermes-agent >/dev/null 2>&1
-    ln -sf "$HOME/.hermes/venv/bin/hermes" /usr/local/bin/hermes ) &
+  ( curl -fsSL https://hermes-agent.nousresearch.com/install.sh > /tmp/hermes-install.sh 2>/dev/null
+    bash /tmp/hermes-install.sh --non-interactive > /tmp/hermes-install.log 2>&1
+    rm -f /tmp/hermes-install.sh ) &
   spinner $!
   echo ""
   export PATH="$HOME/.local/bin:$PATH"
-  which hermes >/dev/null 2>&1 || { echo "  Hermes install failed."; return 1; }
+  if ! which hermes >/dev/null 2>&1; then
+    echo "  Hermes install failed - last log lines:"
+    tail -5 /tmp/hermes-install.log 2>/dev/null
+    return 1
+  fi
   V=$(hermes --version 2>&1 | head -1)
   VM=$(echo "$V" | grep -oP 'v\K[0-9]+\.[0-9]+' | head -1)
   echo "  Hermes installed: $V"
   if [[ -n "$VM" ]] && (( $(echo "$VM" | cut -d. -f2) < 16 )); then
-    echo "  WARNING: old Hermes build ($VM) - one-shot replies may be broken."
-    echo "  Install python3.12 (apt-get install python3.12 python3.12-venv) and re-run."
+    echo "  ERROR: old Hermes build ($VM) - one-shot replies are broken."
+    echo "  Re-run after fixing: rm -rf ~/.hermes && hermes update"
+    return 1
   fi
   mkdir -p ~/.hermes
   echo "OPENCODE_GO_API_KEY=${1:-$API_KEY}" > ~/.hermes/.env
