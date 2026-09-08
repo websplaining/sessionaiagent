@@ -45,14 +45,22 @@ install_openclaw() {
   export PATH="/root/.bun/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
   if which openclaw >/dev/null 2>&1; then return 0; fi
   ensure_swap
-  echo -n "==> Installing OpenClaw..."
-  npm install -g openclaw@latest --no-audit --no-fund >/dev/null 2>&1 &
-  spinner $!
-  echo ""
-  if which openclaw >/dev/null 2>&1; then
-    return 0
-  fi
-  echo "  OpenClaw install FAILED (likely low memory or network)."
+  # Clear stale half-installed leftovers (npm ENOTEMPTY from interrupted runs).
+  rm -rf /usr/lib/node_modules/openclaw /usr/lib/node_modules/.openclaw-* >/dev/null 2>&1
+  local attempt
+  for attempt in 1 2; do
+    echo -n "==> Installing OpenClaw${attempt:+(retry)}..."
+    npm install -g openclaw@latest --no-audit --no-fund --maxsockets=4 --prefer-offline >/dev/null 2>&1 &
+    spinner $!
+    echo ""
+    if which openclaw >/dev/null 2>&1; then
+      return 0
+    fi
+    echo "  Attempt $attempt failed - cleaning and retrying once..."
+    rm -rf /usr/lib/node_modules/openclaw /usr/lib/node_modules/.openclaw-* >/dev/null 2>&1
+  done
+  echo "  OpenClaw install FAILED - last npm log lines:"
+  tail -5 "$(ls -t ~/.npm/_logs/*.log 2>/dev/null | head -1)" 2>/dev/null
   echo "  Re-run setup to retry, or choose Hermes Agent instead."
   return 1
 }
